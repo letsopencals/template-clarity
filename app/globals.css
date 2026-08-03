@@ -1,0 +1,316 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&family=Inter:wght@300;400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+/*
+ * Clear Care Medical — warm, modern clinical light theme (ivory + honey-oak +
+ * dusty medical-blue + brass), pulled from the clinic photography.
+ *
+ * Token names describe what each color IS (not a scaffold legacy):
+ *   --color-bg*       warm ivory/sand surfaces (page + deep)
+ *   --color-surface*  card / raised surfaces (near-white → sand)
+ *   --color-ink*      text (espresso → warm taupe → sand-grey)
+ *   --color-primary*  dusty medical blue (buttons, links, accents)
+ *   --color-tint*     soft blue chip/highlight tints
+ *   --color-brass*    warm brass/honey accent (stars, glows, selected states)
+ *   --color-sand      section background a touch deeper than --color-bg
+ *   --color-line*     warm hairline borders
+ */
+@theme {
+	/* Surfaces — warm ivory & sand, pulled from the hero's cream walls + honey oak */
+	--color-bg: #FAF5EC;
+	--color-bg-deep: #F1E7D5;
+	--color-surface: #FFFDF8;
+	--color-surface-2: #EDE3D1;
+	--color-surface-3: #DED0B9;
+
+	/* Ink — warm espresso-charcoal (from the hero's shadows / window frames) */
+	--color-ink: #2C2A24;
+	--color-ink-muted: #6E6353;
+	--color-ink-dim: #A2957D;
+
+	/* Warm near-black — used for modal backdrops (bg-charcoal/50) and subtle
+	 * status-badge tints (bg-charcoal/10). Enables bg/text/border-charcoal. */
+	--color-charcoal: #26231C;
+
+	/* Accent — dusty medical blue, matching the hero's accent wall + scrubs
+	 * (a warmer, softer cousin of the store's #005B8E primary) */
+	--color-primary: #216E90;
+	--color-primary-bright: #2E88B0;
+	--color-primary-dark: #184F68;
+
+	/* Soft blue tints for chips / highlights */
+	--color-tint: #E4EDF1;
+	--color-tint-strong: #CBDFE8;
+
+	/* Warm brass / honey secondary accent (from the hero's brass fixtures + oak) —
+	 * used for star ratings, glows, and selected-state soft backgrounds. */
+	--color-brass: #C1924A;
+	--color-brass-soft: #F5EBD6;
+
+	/* Warm sand — section backgrounds a touch deeper than --color-bg */
+	--color-sand: #F5EDDF;
+
+	--color-line: rgba(60, 48, 30, 0.10);
+	--color-line-strong: rgba(60, 48, 30, 0.18);
+
+	/* Typography */
+	--font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+	--font-body: 'Inter', system-ui, sans-serif;
+
+	/* Animations */
+	--animate-fade-up: fade-up 0.8s ease both;
+	--animate-fade-in: fade-in 0.8s ease both;
+	--animate-marquee: marquee 25s linear infinite;
+	--animate-pulse-primary: pulse-primary 1.6s ease-in-out infinite;
+
+	/* Spacing */
+	--spacing-section: 8rem;
+	--spacing-section-sm: 5rem;
+}
+
+/* Base styles */
+html {
+	scroll-behavior: smooth;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+body {
+	font-family: var(--font-body);
+	color: var(--color-ink);
+	background-color: var(--color-bg);
+}
+
+/* Selection */
+::selection {
+	background-color: var(--color-primary);
+	color: #FFFFFF;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+
+::-webkit-scrollbar-track {
+	background: var(--color-bg-deep);
+}
+
+::-webkit-scrollbar-thumb {
+	background: var(--color-surface-3);
+	border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: var(--color-ink-dim);
+}
+
+/* Hide scrollbar for horizontal strips */
+.no-scrollbar::-webkit-scrollbar {
+	display: none;
+}
+.no-scrollbar {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+
+/* Display heading utility */
+.heading-display {
+	font-family: var(--font-display);
+	font-weight: 700;
+	line-height: 1.02;
+	letter-spacing: -0.02em;
+}
+
+.heading-display-italic {
+	font-family: var(--font-display);
+	font-style: italic;
+	font-weight: 600;
+	line-height: 1.02;
+	letter-spacing: -0.01em;
+}
+
+/* Image placeholder gradient (light-theme).
+ * Uses background-image (not the `background:` shorthand) so combining this class
+ * with Tailwind's `bg-cover` / `bg-center` doesn't get its size/position reset. */
+.image-placeholder {
+	background-image:
+		linear-gradient(135deg, rgba(193, 146, 74, 0.12) 0%, rgba(255, 255, 255, 0) 55%),
+		linear-gradient(135deg, var(--color-surface-2) 0%, var(--color-surface-3) 100%);
+}
+
+/* Horizontal rule accent */
+.hr-accent {
+	height: 2px;
+	background-color: var(--color-primary);
+	border: none;
+}
+
+/* Dotted leader line ("service ........ $price") */
+.leader-line {
+	flex: 1;
+	margin: 0 1rem;
+	border-bottom: 1px dotted var(--color-line-strong);
+	transform: translateY(-4px);
+}
+
+/* Link hover animation */
+.link-underline {
+	position: relative;
+	display: inline-block;
+}
+
+.link-underline::after {
+	content: '';
+	position: absolute;
+	bottom: -2px;
+	left: 0;
+	width: 0;
+	height: 1.5px;
+	background-color: currentColor;
+	transition: width 0.3s ease;
+}
+
+.link-underline:hover::after {
+	width: 100%;
+}
+
+/* Subtle grid texture overlay for tinted sections */
+.noise-overlay {
+	position: relative;
+}
+
+.noise-overlay::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	opacity: 0.5;
+	background-image:
+		linear-gradient(var(--color-line) 1px, transparent 1px),
+		linear-gradient(90deg, var(--color-line) 1px, transparent 1px);
+	background-size: 44px 44px;
+	pointer-events: none;
+	z-index: 1;
+}
+
+/* Vertical writing for the "BOOK NOW" rail */
+.writing-vertical {
+	writing-mode: vertical-rl;
+	transform: rotate(180deg);
+}
+
+/* Soft elevation for cards */
+.card-shadow {
+	box-shadow: 0 1px 2px rgba(60, 48, 30, 0.04), 0 12px 32px -12px rgba(60, 48, 30, 0.14);
+}
+
+/* Rounded card elevation (Denty-style soft cards) */
+.card-shadow-lg {
+	box-shadow: 0 2px 4px rgba(60, 48, 30, 0.04), 0 24px 60px -24px rgba(60, 48, 30, 0.22);
+}
+
+/*
+ * Liquid glass — translucent panels with a backdrop blur, used as accents over
+ * photography (hero stat cards, sticky nav, floating chips). Kept tasteful, not
+ * everywhere. `.glass` sits on light/photo backgrounds; `.glass-dark` for glass
+ * over the medical-blue gradient.
+ */
+.glass {
+	background: rgba(255, 255, 255, 0.62);
+	backdrop-filter: blur(18px) saturate(160%);
+	-webkit-backdrop-filter: blur(18px) saturate(160%);
+	border: 1px solid rgba(255, 255, 255, 0.7);
+	box-shadow: 0 8px 32px -10px rgba(60, 48, 30, 0.22);
+}
+
+.glass-strong {
+	background: rgba(255, 255, 255, 0.82);
+	backdrop-filter: blur(24px) saturate(180%);
+	-webkit-backdrop-filter: blur(24px) saturate(180%);
+	border: 1px solid rgba(255, 255, 255, 0.8);
+	box-shadow: 0 10px 40px -12px rgba(60, 48, 30, 0.26);
+}
+
+.glass-dark {
+	background: rgba(255, 255, 255, 0.14);
+	backdrop-filter: blur(16px) saturate(150%);
+	-webkit-backdrop-filter: blur(16px) saturate(150%);
+	border: 1px solid rgba(255, 255, 255, 0.28);
+	box-shadow: 0 8px 32px -12px rgba(0, 69, 107, 0.4);
+}
+
+.glass-nav {
+	background: rgba(250, 245, 236, 0.74);
+	backdrop-filter: blur(20px) saturate(180%);
+	-webkit-backdrop-filter: blur(20px) saturate(180%);
+	/* Soft border on ALL sides. Without this, a bare Tailwind `border`/`!border`
+	   utility sets width on every side but leaves the color at `currentColor`
+	   (Tailwind v4 default), producing dark top/side borders. */
+	border: 1px solid rgba(60, 48, 30, 0.09);
+}
+
+/* Soft radial "aura" backdrops behind hero / CTA sections */
+.aura-blue {
+	background:
+		radial-gradient(60% 55% at 78% 12%, rgba(193, 146, 74, 0.18) 0%, rgba(193, 146, 74, 0) 60%),
+		radial-gradient(50% 50% at 8% 90%, rgba(33, 110, 144, 0.12) 0%, rgba(33, 110, 144, 0) 55%);
+}
+
+/* Medical-blue gradient used on CTA bands / telehealth panels — kept all-blue so
+ * it stays clean against the warm surfaces (no muddy blue→brass mix). */
+.gradient-medical {
+	background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 55%, var(--color-primary-bright) 120%);
+}
+
+/* Pill chip for department / category tags */
+.chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	border-radius: 9999px;
+	padding: 0.4rem 0.85rem;
+	font-size: 0.72rem;
+	font-weight: 600;
+	background: var(--color-brass-soft);
+	color: var(--color-primary);
+}
+
+/* Keyframes */
+@keyframes fade-up {
+	from {
+		opacity: 0;
+		transform: translateY(30px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes fade-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes marquee {
+	from {
+		transform: translateX(0);
+	}
+	to {
+		transform: translateX(-50%);
+	}
+}
+
+@keyframes pulse-primary {
+	0%, 100% {
+		box-shadow: 0 0 0 0 rgba(33, 110, 144, 0.4);
+	}
+	50% {
+		box-shadow: 0 0 0 8px rgba(33, 110, 144, 0);
+	}
+}
