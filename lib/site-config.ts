@@ -13,7 +13,7 @@ export const siteConfig = {
 	url: 'https://example.com',
 
 	/** Logo rendered as: {text}{accent} */
-	logo: { text: 'Clear Care', accent: 'Medical' },
+	logo: { text: 'ClearCare', accent: 'Medical' },
 
 	/** Hero section on the homepage */
 	hero: {
@@ -165,11 +165,14 @@ export const siteConfig = {
 	/** Process strip — numbered steps on how booking works */
 	process: {
 		eyebrow: 'How It Works',
+		heading: 'Booking care, made',
+		headingAccent: 'effortless.',
+		body: 'From choosing a department to walking into your appointment — four simple steps, all online.',
 		steps: [
-			{ number: '01', title: 'Choose a department', body: 'Browse by specialty and pick the service you need.' },
-			{ number: '02', title: 'Pick your clinician', body: 'Or let us match you with the next available expert.' },
-			{ number: '03', title: 'Pick a time', body: 'See real availability across all three clinics.' },
-			{ number: '04', title: 'Come in for care', body: 'Share a few details, and we’ll be ready for your visit.' },
+			{ number: '01', title: 'Choose a department', body: 'Browse by specialty and pick the service you need.', icon: 'browse' },
+			{ number: '02', title: 'Pick your clinician', body: 'Or let us match you with the next available expert.', icon: 'clinician' },
+			{ number: '03', title: 'Pick a time', body: 'See real availability across all three clinics.', icon: 'calendar' },
+			{ number: '04', title: 'Come in for care', body: 'Share a few details, and we’ll be ready for your visit.', icon: 'check' },
 		],
 	},
 
@@ -378,15 +381,27 @@ export const siteConfig = {
 		},
 	],
 
-	/** Trust markers shown in the homepage trust/stats band */
+	/** "Why Clear Care" section — photo + heading + trust markers + colour stat cards */
 	trust: {
 		eyebrow: 'Why Clear Care',
-		heading: 'Care you can count on',
+		heading: 'Care you can',
+		headingAccent: 'count on.',
+		body: 'Expert clinicians, modern facilities, and the time to listen — that’s care built around you, not the paperwork. Here’s what you can count on at every visit.',
+		image: 'trust/trust-care.jpg',
+		/** Small floating card overlapping the photo */
+		badge: { title: 'Trusted care, always', body: 'Compassionate care you can trust, every step of the way.' },
+		cta: { label: 'More about us', href: '/about' },
 		markers: [
 			{ icon: 'shield', title: 'Board-certified clinicians', body: 'Every doctor, nurse & therapist is fully licensed and vetted.' },
 			{ icon: 'lock', title: 'Private & secure', body: 'Your records and video visits are encrypted end-to-end.' },
 			{ icon: 'clock', title: 'Same-week availability', body: 'Real openings across all three clinics, booked online.' },
 			{ icon: 'card', title: 'Accepts major insurance', body: 'Transparent pricing with no surprises at the desk.' },
+		],
+		/** Highlighted stat cards (light / blue / dark tones) */
+		statCards: [
+			{ value: '30k+', label: 'Patients cared for', tone: 'light' as const, icon: 'users' },
+			{ value: '4.9', label: 'Average patient rating', tone: 'blue' as const, icon: 'star' },
+			{ value: '24/7', label: 'Online booking', tone: 'dark' as const, icon: 'clock' },
 		],
 	},
 

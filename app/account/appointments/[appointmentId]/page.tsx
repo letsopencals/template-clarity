@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { formatDuration, formatPrice } from '@/lib/format';
@@ -15,6 +15,7 @@ export default function AppointmentDetailPage() {
 	const [appointment, setAppointment] = useState<AppointmentDetailResponse | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [modal, setModal] = useState<ModalState>('none');
+	const actionHandledRef = useRef(false);
 
 	const fetchAppointment = useCallback(async () => {
 		try {
@@ -34,6 +35,17 @@ export default function AppointmentDetailPage() {
 	useEffect(() => {
 		fetchAppointment();
 	}, [fetchAppointment]);
+
+	// Auto-open the cancel/reschedule modal when arriving from an emailed link
+	// (backend links carry `?action=cancel|reschedule`).
+	useEffect(() => {
+		if (!appointment || actionHandledRef.current) return;
+		actionHandledRef.current = true;
+		const action = new URLSearchParams(window.location.search).get('action');
+		if (action === 'cancel' || action === 'reschedule') {
+			setModal(action);
+		}
+	}, [appointment]);
 
 	if (loading) {
 		return (

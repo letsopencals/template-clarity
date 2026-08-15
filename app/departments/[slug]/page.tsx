@@ -26,41 +26,49 @@ function ServiceRow({ product, index }: { product: ProductCollectionProduct; ind
 		>
 			<Link
 				href={`/booking/${product.slug}`}
-				className="group flex items-center justify-between gap-6 rounded-2xl border border-[var(--color-line)] bg-[var(--color-surface)] p-6 transition-all hover:border-[var(--color-primary)]/40 hover:card-shadow lg:p-8"
+				className="group flex flex-col gap-5 rounded-3xl border border-[var(--color-line)] bg-[var(--color-surface)] p-6 transition-all hover:-translate-y-0.5 hover:border-[var(--color-primary)]/25 hover:card-shadow-lg sm:flex-row sm:items-center sm:justify-between lg:p-7"
 			>
-				<div className="min-w-0">
-					<h3 className="text-lg font-semibold text-[var(--color-ink)]">
-						{product.variantTitle || product.title}
-					</h3>
-					{product.description && (
-						<p className="mt-1.5 line-clamp-2 max-w-xl text-sm leading-relaxed text-[var(--color-ink-muted)]">
-							{product.description}
-						</p>
-					)}
-					<div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-[var(--color-ink-dim)]">
-						<span className="inline-flex items-center gap-1.5">
-							<svg className="h-4 w-4 text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-								<path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-							</svg>
-							{formatDuration(product.duration)}
-						</span>
-						{product.maxAttendees > 1 && (
-							<span className="inline-flex items-center gap-1.5">
-								<svg className="h-4 w-4 text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-									<path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-								</svg>
-								Up to {product.maxAttendees}
-							</span>
+				<div className="flex min-w-0 gap-4">
+					{/* index / accent tile */}
+					<span className="hidden h-12 w-12 flex-none items-center justify-center rounded-2xl bg-[var(--color-sage-soft)] font-display text-lg font-semibold text-[var(--color-leaf)] sm:flex">
+						{String(index + 1).padStart(2, '0')}
+					</span>
+					<div className="min-w-0">
+						<h3 className="text-lg font-semibold text-[var(--color-ink)]">
+							{product.variantTitle || product.title}
+						</h3>
+						{product.description && (
+							<p className="mt-1.5 line-clamp-2 max-w-xl text-sm leading-relaxed text-[var(--color-ink-muted)]">
+								{product.description}
+							</p>
 						)}
+						<div className="mt-3 flex flex-wrap items-center gap-2">
+							<span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-tint)] px-3 py-1 text-xs font-medium text-[var(--color-primary)]">
+								<svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+									<path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+								</svg>
+								{formatDuration(product.duration)}
+							</span>
+							{product.maxAttendees > 1 && (
+								<span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-sage-soft)] px-3 py-1 text-xs font-medium text-[var(--color-leaf)]">
+									<svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+										<path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+									</svg>
+									Up to {product.maxAttendees}
+								</span>
+							)}
+						</div>
 					</div>
 				</div>
 
-				<div className="flex shrink-0 items-center gap-5">
-					<span className="text-base font-semibold text-[var(--color-primary)]">
-						{formatPrice(product.price, currency)}
-					</span>
-					<span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-line-strong)] text-[var(--color-ink)] transition-all group-hover:border-[var(--color-primary)] group-hover:bg-[var(--color-primary)] group-hover:text-[var(--color-bg)]">
-						<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+				<div className="flex flex-none items-center justify-between gap-5 border-t border-[var(--color-line)] pt-4 sm:border-0 sm:pt-0">
+					<div className="sm:text-right">
+						<p className="text-[0.68rem] font-medium uppercase tracking-wide text-[var(--color-ink-dim)]">From</p>
+						<p className="heading-display text-xl text-[var(--color-primary)]">{formatPrice(product.price, currency)}</p>
+					</div>
+					<span className="inline-flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-white transition-colors group-hover:bg-[var(--color-primary-bright)]">
+						Book
+						<svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
 							<path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
 						</svg>
 					</span>
@@ -80,18 +88,32 @@ function ClinicianCard({ name, role, imageUrl }: { name: string; role?: string; 
 		.toUpperCase();
 
 	return (
-		<div className="flex items-center gap-4 rounded-3xl border border-[var(--color-line)] bg-[var(--color-surface)] p-5 card-shadow">
-			<div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[var(--color-sand)]">
+		<div className="group flex flex-col overflow-hidden rounded-3xl border border-[var(--color-line)] bg-[var(--color-surface)] p-3 card-shadow transition-all hover:-translate-y-1 hover:card-shadow-lg">
+			<div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-[var(--color-sand)]">
 				{imageUrl ? (
 					// eslint-disable-next-line @next/next/no-img-element
-					<img src={imageUrl} alt={name} className="h-full w-full object-cover" style={{ objectPosition: 'center top' }} />
+					<img src={imageUrl} alt={name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" style={{ objectPosition: 'center top' }} />
 				) : (
-					<span className="heading-display text-2xl text-[var(--color-primary)]">{initials}</span>
+					<div className="flex h-full w-full items-center justify-center bg-[var(--color-sage-soft)]">
+						<span className="heading-display text-4xl text-[var(--color-leaf)]">{initials}</span>
+					</div>
 				)}
+				<div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[var(--color-ink)]/25 to-transparent" />
 			</div>
-			<div className="min-w-0">
+			<div className="px-2 pb-1 pt-4">
 				<h3 className="truncate text-base font-semibold text-[var(--color-ink)]">{name}</h3>
-				{role && <p className="truncate text-sm text-[var(--color-ink-muted)]">{role}</p>}
+				{role ? (
+					<p className="truncate text-sm text-[var(--color-ink-muted)]">{role}</p>
+				) : (
+					<p className="text-sm text-[var(--color-ink-dim)]">Clinician</p>
+				)}
+				<div className="mt-2 flex items-center gap-1 text-[var(--color-brass)]">
+					{[0, 1, 2, 3, 4].map((s) => (
+						<svg key={s} className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+							<path d="M10 1.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8L10 15l-5.3 2.6 1-5.8L1.5 7.7l5.9-.9L10 1.5z" />
+						</svg>
+					))}
+				</div>
 			</div>
 		</div>
 	);
@@ -166,7 +188,7 @@ export default function DepartmentDetailPage() {
 	return (
 		<>
 			{/* Hero */}
-			<section className="bg-[var(--color-bg)] pt-32 pb-14 lg:pt-40 lg:pb-20">
+			<section className="aura-organic relative overflow-hidden bg-[var(--color-bg)] pt-32 pb-14 lg:pt-40 lg:pb-20">
 				<div className="mx-auto max-w-[1400px] px-6 lg:px-10">
 					<Link
 						href="/departments"
@@ -181,7 +203,10 @@ export default function DepartmentDetailPage() {
 					<div className="mt-8 grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
 						<div>
 							{content?.tagline && (
-								<span className="chip">{content.tagline}</span>
+								<span className="chip">
+									<span className="h-1.5 w-1.5 rounded-full bg-[var(--color-leaf)]" />
+									{content.tagline}
+								</span>
 							)}
 							{loading ? (
 								<div className="mt-5 h-14 w-2/3 animate-pulse rounded bg-[var(--color-surface-2)]" />
@@ -216,14 +241,33 @@ export default function DepartmentDetailPage() {
 								initial={{ opacity: 0, scale: 0.98 }}
 								animate={{ opacity: 1, scale: 1 }}
 								transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-								className="relative aspect-[16/10] overflow-hidden rounded-[2rem] border border-[var(--color-line)] card-shadow-lg"
+								className="relative"
 							>
-								{/* eslint-disable-next-line @next/next/no-img-element */}
-								<img
-									src={`/images/${content.heroImage}`}
-									alt={title}
-									className="h-full w-full object-cover"
-								/>
+								<div className="relative aspect-[16/12] overflow-hidden rounded-[2.5rem] ring-1 ring-[var(--color-line)] card-shadow-lg">
+									{/* eslint-disable-next-line @next/next/no-img-element */}
+									<img
+										src={`/images/${content.heroImage}`}
+										alt={title}
+										className="h-full w-full object-cover"
+									/>
+									<div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(70% 40% at 82% 6%, rgba(124,154,110,0.20) 0%, transparent 60%)' }} />
+								</div>
+								{/* floating availability chip */}
+								<div
+									className="glass-strong motion-safe-only absolute -bottom-5 left-5 flex items-center gap-3 rounded-2xl px-4 py-3"
+									style={{ animation: 'var(--animate-float-soft)' }}
+								>
+									<span className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-sage-soft)]">
+										<span className="relative flex h-2.5 w-2.5">
+											<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--color-leaf)] opacity-60" />
+											<span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[var(--color-leaf)]" />
+										</span>
+									</span>
+									<div>
+										<p className="text-[0.7rem] font-medium text-[var(--color-ink-dim)]">Next available</p>
+										<p className="text-sm font-semibold text-[var(--color-ink)]">This week</p>
+									</div>
+								</div>
 							</motion.div>
 						)}
 					</div>
@@ -234,15 +278,31 @@ export default function DepartmentDetailPage() {
 			{content?.treats && content.treats.length > 0 && (
 				<section className="bg-[var(--color-sand)] py-16 lg:py-20">
 					<div className="mx-auto max-w-[1400px] px-6 lg:px-10">
-						<h2 className="heading-display text-3xl text-[var(--color-ink)] lg:text-4xl">What we treat</h2>
-						<div className="mt-8 flex flex-wrap gap-3">
-							{content.treats.map((treat) => (
-								<span
+						<span className="chip">
+							<span className="h-1.5 w-1.5 rounded-full bg-[var(--color-leaf)]" />
+							Conditions & care
+						</span>
+						<h2 className="heading-display mt-4 text-3xl text-[var(--color-ink)] lg:text-4xl">What we treat</h2>
+						<p className="mt-4 max-w-xl text-lg leading-relaxed text-[var(--color-ink-muted)]">
+							Common reasons patients book with this department — and if you&apos;re not sure where to start, our team will point you the right way.
+						</p>
+						<div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+							{content.treats.map((treat, i) => (
+								<motion.div
 									key={treat}
-									className="rounded-full border border-[var(--color-line)] bg-[var(--color-surface)] px-5 py-2.5 text-sm font-medium text-[var(--color-ink)]"
+									initial={{ opacity: 0, y: 16 }}
+									whileInView={{ opacity: 1, y: 0 }}
+									viewport={{ once: true, margin: '-40px' }}
+									transition={{ duration: 0.45, delay: (i % 3) * 0.06, ease: [0.22, 1, 0.36, 1] }}
+									className="flex items-center gap-3 rounded-2xl border border-[var(--color-line)] bg-[var(--color-surface)] p-4 card-shadow transition-all hover:-translate-y-0.5 hover:border-[var(--color-sage)]/50"
 								>
-									{treat}
-								</span>
+									<span className="flex h-9 w-9 flex-none items-center justify-center rounded-xl bg-[var(--color-sage-soft)] text-[var(--color-leaf)]">
+										<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.4}>
+											<path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+										</svg>
+									</span>
+									<span className="text-sm font-medium text-[var(--color-ink)]">{treat}</span>
+								</motion.div>
 							))}
 						</div>
 					</div>
@@ -252,7 +312,11 @@ export default function DepartmentDetailPage() {
 			{/* Services */}
 			<section id="services" className="scroll-mt-24 bg-[var(--color-bg)] py-16 lg:py-24">
 				<div className="mx-auto max-w-[1000px] px-6 lg:px-10">
-					<h2 className="heading-display text-3xl text-[var(--color-ink)] lg:text-4xl">Services & pricing</h2>
+					<span className="chip">
+						<span className="h-1.5 w-1.5 rounded-full bg-[var(--color-leaf)]" />
+						Book a visit
+					</span>
+					<h2 className="heading-display mt-4 text-3xl text-[var(--color-ink)] lg:text-4xl">Services &amp; pricing</h2>
 
 					{loading && (
 						<div className="mt-8 space-y-4">
@@ -287,7 +351,11 @@ export default function DepartmentDetailPage() {
 			{(clinicians.length > 0 || (content?.clinicianNames && content.clinicianNames.length > 0)) && (
 				<section className="bg-[var(--color-sand)] py-16 lg:py-24">
 					<div className="mx-auto max-w-[1400px] px-6 lg:px-10">
-						<h2 className="heading-display text-3xl text-[var(--color-ink)] lg:text-4xl">Meet your clinicians</h2>
+						<span className="chip">
+							<span className="h-1.5 w-1.5 rounded-full bg-[var(--color-leaf)]" />
+							The team
+						</span>
+						<h2 className="heading-display mt-4 text-3xl text-[var(--color-ink)] lg:text-4xl">Meet your clinicians</h2>
 						<p className="mt-4 max-w-xl text-lg leading-relaxed text-[var(--color-ink-muted)]">
 							Experienced specialists who take the time to listen and explain.
 						</p>
@@ -307,7 +375,11 @@ export default function DepartmentDetailPage() {
 			{content?.faqs && content.faqs.length > 0 && (
 				<section className="bg-[var(--color-bg)] py-16 lg:py-24">
 					<div className="mx-auto max-w-[900px] px-6 lg:px-10">
-						<h2 className="heading-display text-3xl text-[var(--color-ink)] lg:text-4xl">Common questions</h2>
+						<span className="chip">
+							<span className="h-1.5 w-1.5 rounded-full bg-[var(--color-leaf)]" />
+							Good to know
+						</span>
+						<h2 className="heading-display mt-4 text-3xl text-[var(--color-ink)] lg:text-4xl">Common questions</h2>
 						<div className="mt-8">
 							<FaqAccordion items={content.faqs} />
 						</div>

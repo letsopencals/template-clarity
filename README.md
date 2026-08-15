@@ -4,9 +4,9 @@ A production-ready booking website for medical clinics. Built with **Next.js 15*
 
 **[View Live Demo →](https://template-clarity.vercel.app)**
 
-![Clear Care Medical — the booking flow on mobile, end to end](docs/banner-phones.png)
+![ClearCare Medical — the storefront and booking flow, on desktop and mobile](docs/cover.png)
 
-Clean, clinical light palette (medical blue on soft white), department-first booking, and a full storefront — services, appointments, checkout, customer accounts — wired up out of the box. MIT licensed: clone it, rebrand it, ship it.
+Warm, organic clinic palette (pastel wood, brass, and sage on soft ivory with a dusty medical blue), department-first booking, and a full storefront — services, appointments, checkout, customer accounts — wired up out of the box. MIT licensed: clone it, rebrand it, ship it.
 
 ---
 
@@ -40,11 +40,11 @@ That's it. Once deployed, you'll have the same fully functional booking site as 
 
 A calm, editorial homepage, department-first browsing, and a multi-location "clinics" section — all driven by your Opencals data.
 
-![Homepage hero](docs/homepage-hero.png)
+![Homepage hero — editorial, warm, and organic](docs/homepage-hero.png)
 
-![Departments](docs/departments.png)
+![Why ClearCare — trust markers and live stats](docs/why-clear-care.png)
 
-![Service list with pricing](docs/services.png)
+![Departments — browse care by specialty](docs/departments.png)
 
 ---
 
@@ -56,7 +56,7 @@ Patients browse by specialty — General Medicine, Cardiology, Dermatology, Pedi
 ### Online Booking
 A single-page, card-stack booking flow inspired by native mobile apps: choose service → clinician → date → time → medical intake → confirm. Sticky bottom CTA on mobile, sticky summary rail on desktop.
 
-![Booking flow with live summary](docs/booking-extras.png)
+![The booking page — location, clinician, date, and live time slots](docs/booking-page.png)
 
 ### Medical Intake at Checkout
 Custom checkout questions capture the reason for visit, insurance provider, and whether the patient is new — surfaced as a dedicated step in the booking flow and saved to the appointment.
@@ -71,12 +71,14 @@ Global location selector, clinicians filtered by location, and per-location avai
 Multi-step checkout with customer info, medical intake, and secure payment via Stripe Elements. Auto-login after checkout so the patient lands in their account with the new appointment.
 
 ### Customer Accounts
-Sign in, view appointments, browse order history, manage profile, and reschedule or cancel appointments.
+Passwordless sign-in by default: customers enter their email and receive a 6-digit login code (password sign-in stays available as a fallback). Once signed in they can view appointments, browse order history, manage their profile, and reschedule or cancel appointments.
 
-![Customer account — appointment detail](docs/account-appointment.png)
+One-time email links from Opencals (view/reschedule/cancel appointment, leave feedback, verify email, reset password) all resolve through the `/link/[token]` route, which signs the customer in and redirects them to the right place.
+
+> **Set your Storefront Base URL.** For emailed links to point back to this app, set **Storefront Base URL** in your Opencals dashboard (Settings → API) to your deployed URL (e.g. `https://your-domain.com`). Opencals builds every customer link as `{storefrontBaseUrl}/link/{token}`.
 
 ### Mobile-First Design
-Fully responsive. The booking page in particular is designed mobile-first — the booking flow shown at the top of this README is the live template, not a mockup.
+Fully responsive. The booking page in particular is designed mobile-first — a card-stack flow that feels native on a phone and expands to a two-column layout on desktop.
 
 ### SEO Ready
 Per-page metadata, Open Graph cards, `MedicalClinic` structured data, robots.txt, and sitemap.xml — configured out of the box.

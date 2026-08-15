@@ -65,7 +65,7 @@ export function Header() {
 								</span>
 							)}
 							<span className="font-display text-xl font-bold tracking-tight text-[var(--color-ink)]">
-								{siteConfig.logo.text}
+								{siteConfig.logo.text}{' '}
 								<span className="text-[var(--color-primary)]">{siteConfig.logo.accent}</span>
 							</span>
 						</Link>

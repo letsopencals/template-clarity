@@ -50,6 +50,15 @@
 	/* Warm sand — section backgrounds a touch deeper than --color-bg */
 	--color-sand: #F5EDDF;
 
+	/* Organic green — pulled from the hero's fiddle-leaf plant. Adds the "living",
+	 * botanical warmth that ties the brand to nature. Sage = muted foliage,
+	 * leaf = deep accent, sage-soft = tint (mirrors --color-brass-soft). */
+	--color-sage: #7C9A6E;
+	--color-sage-bright: #93AF83;
+	--color-leaf: #4F7A52;
+	--color-leaf-deep: #35603C;
+	--color-sage-soft: #E9EFE2;
+
 	--color-line: rgba(60, 48, 30, 0.10);
 	--color-line-strong: rgba(60, 48, 30, 0.18);
 
@@ -62,6 +71,11 @@
 	--animate-fade-in: fade-in 0.8s ease both;
 	--animate-marquee: marquee 25s linear infinite;
 	--animate-pulse-primary: pulse-primary 1.6s ease-in-out infinite;
+	--animate-sway: sway 6s ease-in-out infinite;
+	--animate-sway-slow: sway 9s ease-in-out infinite;
+	--animate-float-soft: float-soft 7s ease-in-out infinite;
+	--animate-light-drift: light-drift 12s ease-in-out infinite;
+	--animate-grow-line: grow-line 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 
 	/* Spacing */
 	--spacing-section: 8rem;
@@ -257,6 +271,20 @@ body {
 		radial-gradient(50% 50% at 8% 90%, rgba(33, 110, 144, 0.12) 0%, rgba(33, 110, 144, 0) 55%);
 }
 
+/* Organic aura — a warmer, living cousin of .aura-blue that layers a soft sage
+ * glow with brass + blue, for the redesigned hero / botanical sections. */
+.aura-organic {
+	background:
+		radial-gradient(55% 50% at 82% 8%, rgba(193, 146, 74, 0.20) 0%, rgba(193, 146, 74, 0) 58%),
+		radial-gradient(48% 55% at 10% 18%, rgba(124, 154, 110, 0.22) 0%, rgba(124, 154, 110, 0) 60%),
+		radial-gradient(60% 60% at 20% 100%, rgba(33, 110, 144, 0.10) 0%, rgba(33, 110, 144, 0) 55%);
+}
+
+/* Soft leaf-green gradient for botanical accents / 3D lighting parity. */
+.gradient-leaf {
+	background: linear-gradient(135deg, var(--color-leaf-deep) 0%, var(--color-leaf) 50%, var(--color-sage) 120%);
+}
+
 /* Medical-blue gradient used on CTA bands / telehealth panels — kept all-blue so
  * it stays clean against the warm surfaces (no muddy blue→brass mix). */
 .gradient-medical {
@@ -313,4 +341,35 @@ body {
 	50% {
 		box-shadow: 0 0 0 8px rgba(33, 110, 144, 0);
 	}
+}
+
+/* Gentle botanical sway — for plant leaves / organic SVG groups.
+ * transform-origin should be set at the base (bottom) of the element. */
+@keyframes sway {
+	0%, 100% { transform: rotate(-1.6deg); }
+	50% { transform: rotate(1.8deg); }
+}
+
+/* Slow vertical float — floating glass cards / 3D-feeling chips. */
+@keyframes float-soft {
+	0%, 100% { transform: translateY(0); }
+	50% { transform: translateY(-10px); }
+}
+
+/* Drifting light shaft — subtle opacity + skew shimmer for window light. */
+@keyframes light-drift {
+	0%, 100% { opacity: 0.35; transform: translateX(-2%) skewX(-6deg); }
+	50% { opacity: 0.6; transform: translateX(2%) skewX(-6deg); }
+}
+
+/* Animated stroke draw — for the "leaf/pulse line" weaving through headings.
+ * Pair with stroke-dasharray/offset set inline on the path. */
+@keyframes grow-line {
+	from { stroke-dashoffset: var(--line-length, 1000); }
+	to { stroke-dashoffset: 0; }
+}
+
+/* Respect reduced-motion: kill the infinite ambient loops. */
+@media (prefers-reduced-motion: reduce) {
+	.motion-safe-only { animation: none !important; }
 }

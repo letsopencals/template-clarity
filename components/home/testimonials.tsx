@@ -3,51 +3,99 @@
 import { motion } from 'framer-motion';
 import { siteConfig } from '@/lib/site-config';
 
+const avatarTones = [
+	'bg-[var(--color-brass-soft)] text-[var(--color-brass)]',
+	'bg-[var(--color-sage-soft)] text-[var(--color-leaf)]',
+	'bg-[var(--color-tint)] text-[var(--color-primary)]',
+];
+
+function Stars({ className = 'h-4 w-4' }: { className?: string }) {
+	return (
+		<div className="flex items-center gap-0.5 text-[var(--color-brass)]">
+			{[0, 1, 2, 3, 4].map((s) => (
+				<svg key={s} className={className} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+					<path d="M10 1.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8L10 15l-5.3 2.6 1-5.8L1.5 7.7l5.9-.9L10 1.5z" />
+				</svg>
+			))}
+		</div>
+	);
+}
+
 export function Testimonials() {
-	const { testimonials, statsBand } = siteConfig;
+	const { testimonials, hero } = siteConfig;
+	const [featured, ...rest] = testimonials;
 
 	return (
-		<section className="relative bg-[var(--color-sand)] py-20 lg:py-28">
+		<section id="testimonials" className="relative scroll-mt-24 bg-[var(--color-sand)] py-20 lg:py-28">
 			<div className="mx-auto max-w-[1400px] px-6 lg:px-10">
-				{/* Stats band */}
-				<div className="grid gap-6 rounded-[2rem] border border-[var(--color-line)] bg-[var(--color-surface)] p-8 card-shadow sm:grid-cols-3 lg:p-10">
-					{statsBand.stats.map((stat) => (
-						<div key={stat.label} className="text-center">
-							<p className="heading-display text-4xl text-[var(--color-primary)] lg:text-5xl">{stat.value}</p>
-							<p className="mt-2 text-sm font-medium text-[var(--color-ink-muted)]">{stat.label}</p>
+				{/* Header */}
+				<div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+					<div className="max-w-2xl">
+						<span className="chip">
+							<span className="h-1.5 w-1.5 rounded-full bg-[var(--color-leaf)]" />
+							Patient Stories
+						</span>
+						<h2 className="heading-display mt-5 text-4xl leading-[1.05] text-[var(--color-ink)] lg:text-5xl">
+							Loved by patients <span className="heading-display-italic text-[var(--color-primary)]">across Boston</span>
+						</h2>
+					</div>
+					{/* rating summary */}
+					<div className="flex items-center gap-4 rounded-2xl border border-[var(--color-line)] bg-[var(--color-surface)] px-5 py-4 card-shadow">
+						<p className="heading-display text-4xl text-[var(--color-primary)]">{hero.rating.score}</p>
+						<div>
+							<Stars />
+							<p className="mt-1 text-xs text-[var(--color-ink-dim)]">{hero.rating.reviews}</p>
 						</div>
-					))}
+					</div>
 				</div>
 
-				<div className="mt-16 max-w-2xl">
-					<span className="chip">Patient Stories</span>
-					<h2 className="heading-display mt-5 text-4xl text-[var(--color-ink)] lg:text-5xl">
-						Loved by patients across Boston
-					</h2>
-				</div>
+				<div className="mt-10 grid gap-6 lg:grid-cols-3">
+					{/* Featured testimonial */}
+					{featured && (
+						<motion.figure
+							initial={{ opacity: 0, y: 22 }}
+							whileInView={{ opacity: 1, y: 0 }}
+							viewport={{ once: true, margin: '-60px' }}
+							transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+							className="gradient-medical relative flex flex-col gap-6 overflow-hidden rounded-[1.75rem] p-8 card-shadow-lg lg:col-span-3 lg:flex-row lg:items-center lg:gap-10 lg:p-10"
+						>
+							<span aria-hidden className="pointer-events-none absolute -right-10 -top-12 h-56 w-56 rounded-full bg-[var(--color-brass)]/25 blur-3xl" />
+							<span aria-hidden className="pointer-events-none absolute -bottom-16 left-1/3 h-48 w-48 rounded-full bg-[var(--color-sage)]/20 blur-3xl" />
+							<svg aria-hidden className="relative h-12 w-12 flex-none text-white/30" viewBox="0 0 24 24" fill="currentColor">
+								<path d="M7 7h4v4c0 3-2 5-5 5V14c1 0 2-1 2-2H7V7zm8 0h4v4c0 3-2 5-5 5v-2c1 0 2-1 2-2h-3V7z" />
+							</svg>
+							<blockquote className="relative flex-1 text-xl font-medium leading-relaxed text-white lg:text-2xl">
+								“{featured.quote}”
+							</blockquote>
+							<figcaption className="relative flex flex-none items-center gap-3 lg:flex-col lg:items-start lg:gap-4 lg:border-l lg:border-white/20 lg:pl-10">
+								<span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 text-lg font-semibold text-white">
+									{featured.author.charAt(0)}
+								</span>
+								<div>
+									<Stars className="h-4 w-4 text-white" />
+									<p className="mt-2 text-sm font-semibold text-white">{featured.author}</p>
+									<p className="text-xs text-white/70">{featured.role}</p>
+								</div>
+							</figcaption>
+						</motion.figure>
+					)}
 
-				<div className="mt-10 grid gap-6 md:grid-cols-2">
-					{testimonials.map((t, i) => (
+					{/* Remaining testimonials */}
+					{rest.map((t, i) => (
 						<motion.figure
 							key={t.author}
 							initial={{ opacity: 0, y: 20 }}
 							whileInView={{ opacity: 1, y: 0 }}
 							viewport={{ once: true, margin: '-60px' }}
-							transition={{ duration: 0.5, delay: (i % 2) * 0.08, ease: [0.22, 1, 0.36, 1] }}
-							className="flex flex-col rounded-3xl border border-[var(--color-line)] bg-[var(--color-surface)] p-7 card-shadow"
+							transition={{ duration: 0.5, delay: 0.08 + i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+							className="flex flex-col rounded-[1.75rem] border border-[var(--color-line)] bg-[var(--color-surface)] p-7 card-shadow transition-all hover:-translate-y-1 hover:card-shadow-lg"
 						>
-							<div className="flex items-center gap-0.5 text-[var(--color-brass)]">
-								{[0, 1, 2, 3, 4].map((s) => (
-									<svg key={s} className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-										<path d="M10 1.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8L10 15l-5.3 2.6 1-5.8L1.5 7.7l5.9-.9L10 1.5z" />
-									</svg>
-								))}
-							</div>
-							<blockquote className="mt-4 flex-1 text-base leading-relaxed text-[var(--color-ink)]">
+							<Stars />
+							<blockquote className="mt-4 flex-1 text-[0.95rem] leading-relaxed text-[var(--color-ink)]">
 								“{t.quote}”
 							</blockquote>
 							<figcaption className="mt-6 flex items-center gap-3">
-								<span className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-brass-soft)] text-sm font-semibold text-[var(--color-primary)]">
+								<span className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold ${avatarTones[i % avatarTones.length]}`}>
 									{t.author.charAt(0)}
 								</span>
 								<div>

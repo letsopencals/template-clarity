@@ -1,19 +1,34 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { signInSchema, type SignInFormValues } from '@/lib/schemas';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { z } from 'zod';
 import { siteConfig } from '@/lib/site-config';
+
+const emailSchema = z.string().min(1, 'Email is required').email('Please enter a valid email');
+
+type Step = 'email' | 'choose' | 'code' | 'password';
+
+const inputClass =
+	'w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-bg)] px-4 py-3 text-sm text-[var(--color-ink)] outline-none transition-colors placeholder:text-[var(--color-ink-dim)] focus:border-[var(--color-primary)]';
+const primaryBtnClass =
+	'w-full bg-[var(--color-primary)] px-8 py-4 text-xs font-semibold uppercase tracking-[0.2em] text-white transition-all hover:bg-[var(--color-primary-bright)] disabled:opacity-50';
+const secondaryBtnClass =
+	'w-full border border-[var(--color-line)] px-8 py-4 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-ink)] transition-all hover:border-[var(--color-primary)] disabled:opacity-50';
+const labelClass = 'mb-2 block text-xs font-medium text-[var(--color-ink-muted)]';
 
 export default function SignInPage() {
 	return (
-		<Suspense fallback={<div className="flex min-h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--color-primary)] border-t-transparent" /></div>}>
+		<Suspense
+			fallback={
+				<div className="flex min-h-screen items-center justify-center">
+					<div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--color-primary)] border-t-transparent" />
+				</div>
+			}
+		>
 			<SignInContent />
 		</Suspense>
 	);
@@ -24,23 +39,81 @@ function SignInContent() {
 	const searchParams = useSearchParams();
 	const callbackUrl = searchParams.get('callbackUrl') ?? '/account';
 
+	const [step, setStep] = useState<Step>('email');
+	const [email, setEmail] = useState('');
+	const [code, setCode] = useState('');
+	const [password, setPassword] = useState('');
 	const [error, setError] = useState<string | null>(null);
+	const [loading, setLoading] = useState(false);
+	const [cooldown, setCooldown] = useState(0);
 
-	const form = useForm<SignInFormValues>({
-		resolver: zodResolver(signInSchema),
-		defaultValues: { email: '', password: '' },
-	});
+	// Resend cooldown timer
+	useEffect(() => {
+		if (cooldown <= 0) return;
+		const id = setTimeout(() => setCooldown((c) => c - 1), 1000);
+		return () => clearTimeout(id);
+	}, [cooldown]);
 
-	const onSubmit = async (data: SignInFormValues) => {
+	const goToChoose = () => {
 		setError(null);
+		const parsed = emailSchema.safeParse(email);
+		if (!parsed.success) {
+			setError(parsed.error.issues[0]?.message ?? 'Please enter a valid email');
+			return;
+		}
+		setStep('choose');
+	};
 
+	const sendCode = async () => {
+		setError(null);
+		setLoading(true);
 		try {
-			const result = await signIn('credentials', {
-				email: data.email,
-				password: data.password,
-				redirect: false,
+			await fetch('/api/auth/request-login-code', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ email }),
 			});
+			setCooldown(60);
+			setCode('');
+			setStep('code');
+		} catch {
+			setError('Something went wrong. Please try again.');
+		} finally {
+			setLoading(false);
+		}
+	};
 
+	const verifyCode = async () => {
+		setError(null);
+		if (code.trim().length < 6) {
+			setError('Enter the 6-digit code from your email.');
+			return;
+		}
+		setLoading(true);
+		try {
+			const result = await signIn('login-code', { email, code: code.trim(), redirect: false });
+			if (result?.error) {
+				setError('That code is invalid or expired. Please try again.');
+			} else {
+				router.push(callbackUrl);
+				router.refresh();
+			}
+		} catch {
+			setError('Something went wrong. Please try again.');
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const signInWithPassword = async () => {
+		setError(null);
+		if (password.length < 6) {
+			setError('Password must be at least 6 characters.');
+			return;
+		}
+		setLoading(true);
+		try {
+			const result = await signIn('credentials', { email, password, redirect: false });
 			if (result?.error) {
 				setError('Invalid email or password.');
 			} else {
@@ -49,7 +122,16 @@ function SignInContent() {
 			}
 		} catch {
 			setError('Something went wrong. Please try again.');
+		} finally {
+			setLoading(false);
 		}
+	};
+
+	const useDifferentEmail = () => {
+		setError(null);
+		setCode('');
+		setPassword('');
+		setStep('email');
 	};
 
 	return (
@@ -62,10 +144,15 @@ function SignInContent() {
 			>
 				<div className="text-center">
 					<Link href="/" className="font-display text-2xl font-bold tracking-tight text-[var(--color-ink)]">
-						{siteConfig.logo.text}<span className="text-[var(--color-primary)]">{siteConfig.logo.accent}</span>
+						{siteConfig.logo.text}
+						<span className="text-[var(--color-primary)]">{siteConfig.logo.accent}</span>
 					</Link>
 					<h1 className="mt-6 font-display text-3xl font-semibold text-[var(--color-ink)]">Welcome Back</h1>
-					<p className="mt-2 text-sm text-[var(--color-ink-muted)]">Sign in to manage your appointments</p>
+					<p className="mt-2 text-sm text-[var(--color-ink-muted)]">
+						{step === 'code'
+							? 'Enter the code we emailed you'
+							: 'Sign in to manage your appointments'}
+					</p>
 				</div>
 
 				{error && (
@@ -74,60 +161,152 @@ function SignInContent() {
 					</div>
 				)}
 
-				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="mt-8 space-y-4">
-						<FormField
-							control={form.control}
-							name="email"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel className="mb-0 text-xs font-medium normal-case tracking-normal text-[var(--color-ink-muted)]">Email</FormLabel>
-									<FormControl>
-										<input
-											{...field}
-											type="email"
-											placeholder="your@email.com"
-											className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-bg)] px-4 py-3 text-sm text-[var(--color-ink)] outline-none transition-colors placeholder:text-[var(--color-ink-dim)] focus:border-[var(--color-primary)]"
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name="password"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel className="mb-0 text-xs font-medium normal-case tracking-normal text-[var(--color-ink-muted)]">Password</FormLabel>
-									<FormControl>
-										<input
-											{...field}
-											type="password"
-											placeholder="Enter your password"
-											className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-bg)] px-4 py-3 text-sm text-[var(--color-ink)] outline-none transition-colors placeholder:text-[var(--color-ink-dim)] focus:border-[var(--color-primary)]"
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
+				{/* Step 1: email */}
+				{step === 'email' && (
+					<form
+						onSubmit={(e) => {
+							e.preventDefault();
+							goToChoose();
+						}}
+						className="mt-8 space-y-4"
+					>
+						<div>
+							<label className={labelClass}>Email</label>
+							<input
+								type="email"
+								autoFocus
+								value={email}
+								onChange={(e) => setEmail(e.target.value)}
+								placeholder="your@email.com"
+								className={inputClass}
+							/>
+						</div>
+						<button type="submit" className={primaryBtnClass}>
+							Continue
+						</button>
+					</form>
+				)}
 
+				{/* Step 2: choose method */}
+				{step === 'choose' && (
+					<div className="mt-8 space-y-4">
+						<p className="text-center text-sm text-[var(--color-ink-muted)]">
+							How would you like to sign in as{' '}
+							<span className="font-medium text-[var(--color-ink)]">{email}</span>?
+						</p>
+						<button type="button" onClick={sendCode} disabled={loading} className={primaryBtnClass}>
+							{loading ? 'Sending...' : 'Email me a login code'}
+						</button>
+						<button
+							type="button"
+							onClick={() => {
+								setError(null);
+								setStep('password');
+							}}
+							disabled={loading}
+							className={secondaryBtnClass}
+						>
+							Use my password
+						</button>
+						<button
+							type="button"
+							onClick={useDifferentEmail}
+							className="w-full text-center text-xs text-[var(--color-ink-muted)] hover:text-[var(--color-primary)]"
+						>
+							Use a different email
+						</button>
+					</div>
+				)}
+
+				{/* Step 3a: code entry */}
+				{step === 'code' && (
+					<form
+						onSubmit={(e) => {
+							e.preventDefault();
+							verifyCode();
+						}}
+						className="mt-8 space-y-4"
+					>
+						<p className="text-center text-sm text-[var(--color-ink-muted)]">
+							We sent a 6-digit code to{' '}
+							<span className="font-medium text-[var(--color-ink)]">{email}</span>.
+						</p>
+						<input
+							type="text"
+							inputMode="numeric"
+							autoComplete="one-time-code"
+							autoFocus
+							maxLength={6}
+							value={code}
+							onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+							placeholder="000000"
+							className={`${inputClass} text-center text-lg tracking-[0.5em]`}
+						/>
+						<button type="submit" disabled={loading} className={primaryBtnClass}>
+							{loading ? 'Verifying...' : 'Sign In'}
+						</button>
+						<button
+							type="button"
+							onClick={sendCode}
+							disabled={cooldown > 0 || loading}
+							className="w-full text-center text-xs text-[var(--color-ink-muted)] hover:text-[var(--color-primary)] disabled:opacity-50"
+						>
+							{cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend code'}
+						</button>
+						<button
+							type="button"
+							onClick={useDifferentEmail}
+							className="w-full text-center text-xs text-[var(--color-ink-muted)] hover:text-[var(--color-primary)]"
+						>
+							Use a different email
+						</button>
+					</form>
+				)}
+
+				{/* Step 3b: password */}
+				{step === 'password' && (
+					<form
+						onSubmit={(e) => {
+							e.preventDefault();
+							signInWithPassword();
+						}}
+						className="mt-8 space-y-4"
+					>
+						<div>
+							<label className={labelClass}>Password</label>
+							<input
+								type="password"
+								autoFocus
+								value={password}
+								onChange={(e) => setPassword(e.target.value)}
+								placeholder="Enter your password"
+								className={inputClass}
+							/>
+						</div>
 						<div className="flex justify-end">
-							<Link href="/auth/forgot-password" className="text-xs text-[var(--color-ink-muted)] hover:text-[var(--color-primary)]">
+							<Link
+								href="/auth/forgot-password"
+								className="text-xs text-[var(--color-ink-muted)] hover:text-[var(--color-primary)]"
+							>
 								Forgot password?
 							</Link>
 						</div>
-
+						<button type="submit" disabled={loading} className={primaryBtnClass}>
+							{loading ? 'Signing in...' : 'Sign In'}
+						</button>
 						<button
-							type="submit"
-							disabled={form.formState.isSubmitting}
-							className="w-full bg-[var(--color-primary)] px-8 py-4 text-xs font-semibold uppercase tracking-[0.2em] text-white transition-all hover:bg-[var(--color-primary-bright)] disabled:opacity-50"
+							type="button"
+							onClick={() => {
+								setError(null);
+								setPassword('');
+								setStep('choose');
+							}}
+							className="w-full text-center text-xs text-[var(--color-ink-muted)] hover:text-[var(--color-primary)]"
 						>
-							{form.formState.isSubmitting ? 'Signing in...' : 'Sign In'}
+							Back
 						</button>
 					</form>
-				</Form>
+				)}
 
 				<p className="mt-8 text-center text-sm text-[var(--color-ink-muted)]">
 					Don&apos;t have an account?{' '}

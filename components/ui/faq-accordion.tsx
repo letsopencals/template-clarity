@@ -12,21 +12,30 @@ export function FaqAccordion({ items }: { items: FaqItem[] }) {
 	const [openIndex, setOpenIndex] = useState<number | null>(0);
 
 	return (
-		<div className="divide-y divide-[var(--color-line)] overflow-hidden rounded-3xl border border-[var(--color-line)] bg-[var(--color-surface)]">
+		<div className="flex flex-col gap-3">
 			{items.map((item, i) => {
 				const isOpen = openIndex === i;
 				return (
-					<div key={item.q}>
+					<div
+						key={item.q}
+						className={`overflow-hidden rounded-2xl border transition-colors ${
+							isOpen
+								? 'border-[var(--color-primary)]/25 bg-[var(--color-surface)] card-shadow'
+								: 'border-[var(--color-line)] bg-[var(--color-surface)] hover:border-[var(--color-line-strong)]'
+						}`}
+					>
 						<button
 							type="button"
 							onClick={() => setOpenIndex(isOpen ? null : i)}
 							aria-expanded={isOpen}
-							className="flex w-full items-center justify-between gap-6 px-6 py-5 text-left transition-colors hover:bg-[var(--color-surface-2)]/40 lg:px-8"
+							className="flex w-full items-center justify-between gap-6 px-6 py-5 text-left lg:px-7"
 						>
-							<span className="text-base font-semibold text-[var(--color-ink)]">{item.q}</span>
+							<span className={`text-base font-semibold transition-colors ${isOpen ? 'text-[var(--color-primary)]' : 'text-[var(--color-ink)]'}`}>
+								{item.q}
+							</span>
 							<span
-								className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--color-line-strong)] text-[var(--color-primary)] transition-transform ${
-									isOpen ? 'rotate-45' : ''
+								className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-all ${
+									isOpen ? 'rotate-45 bg-[var(--color-primary)] text-white' : 'border border-[var(--color-line-strong)] text-[var(--color-primary)]'
 								}`}
 							>
 								<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -43,7 +52,7 @@ export function FaqAccordion({ items }: { items: FaqItem[] }) {
 									transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
 									className="overflow-hidden"
 								>
-									<p className="px-6 pb-6 text-sm leading-relaxed text-[var(--color-ink-muted)] lg:px-8">
+									<p className="px-6 pb-6 text-sm leading-relaxed text-[var(--color-ink-muted)] lg:px-7">
 										{item.a}
 									</p>
 								</motion.div>

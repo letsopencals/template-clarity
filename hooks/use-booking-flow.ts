@@ -172,6 +172,18 @@ export function useBookingFlow(slug: string) {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [selectedVariantId, globalLocationId]);
 
+	// Preselect today's date on landing (and after a variant/location reset) so the
+	// slots load automatically without the patient having to click a date. Uses the
+	// same local-date string the day strip renders for its "today" card, so the
+	// selection lines up with the highlighted first day.
+	useEffect(() => {
+		if (!activeVariant || availability.selectedDate) return;
+		const d = new Date();
+		const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+		availability.setSelectedDate(todayStr);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [activeVariant, availability.selectedDate]);
+
 	const handleDateSelect = useCallback(
 		(date: string | null) => {
 			availability.setSelectedDate(date);

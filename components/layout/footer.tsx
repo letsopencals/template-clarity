@@ -66,7 +66,7 @@ export function Footer() {
 					<div className="lg:col-span-2">
 						<Link href="/" className="inline-block">
 							<span className="font-display text-3xl font-semibold tracking-tight">
-								{siteConfig.logo.text}
+								{siteConfig.logo.text}{' '}
 								<span className="text-[var(--color-primary)]">{siteConfig.logo.accent}</span>
 							</span>
 						</Link>

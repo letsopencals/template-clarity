@@ -167,6 +167,62 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 				}
 			},
 		}),
+		// Passwordless login: verify a 6-digit email code
+		Credentials({
+			id: 'login-code',
+			credentials: { email: {}, code: {} },
+			async authorize(credentials) {
+				const { email, code } = credentials as { email: string; code: string };
+
+				try {
+					const { data } = await AuthService.verifyLoginCode({ body: { email, code } });
+					const { accessToken, refreshToken } = data!;
+
+					const { data: customer } = await SelfService.getProfile({
+						headers: { Authorization: `Bearer ${accessToken}` },
+					});
+
+					return {
+						id: customer?.id ?? email,
+						email,
+						accessToken,
+						refreshToken,
+						customer: mapCustomer(customer),
+					};
+				} catch {
+					return null;
+				}
+			},
+		}),
+		// Magic link: sign in with pre-resolved tokens (from /link/[token] resolution)
+		Credentials({
+			id: 'magic-link',
+			credentials: { accessToken: {}, refreshToken: {} },
+			async authorize(credentials) {
+				const { accessToken, refreshToken } = credentials as {
+					accessToken: string;
+					refreshToken: string;
+				};
+
+				if (!accessToken) return null;
+
+				try {
+					const { data: customer } = await SelfService.getProfile({
+						headers: { Authorization: `Bearer ${accessToken}` },
+					});
+
+					return {
+						id: customer?.id ?? 'magic-customer',
+						email: customer?.email ?? undefined,
+						accessToken,
+						refreshToken: refreshToken ?? '',
+						customer: mapCustomer(customer),
+					};
+				} catch {
+					return null;
+				}
+			},
+		}),
 	],
 	callbacks: {
 		async jwt({ token, user }) {
