@@ -26,8 +26,12 @@ export function PaymentStep({
 	onStripeError,
 	onSubmitCash,
 }: PaymentStepProps) {
-	const showStripe = provider === 'stripe' && paymentData?.clientSecret;
-	const showCash = provider === 'cash' && paymentData;
+	// Branch on the RESPONSE provider for the fallback: when nothing is collectible the backend
+	// overrides the requested provider with "no payment required" (cast: the pinned SDK's union
+	// predates it). clientSecret is null in that case, so showStripe/showCash won't match.
+	const showNoPayment = (paymentData?.provider as string) === 'no_payment_required';
+	const showStripe = !showNoPayment && provider === 'stripe' && paymentData?.clientSecret;
+	const showCash = !showNoPayment && provider === 'cash' && paymentData;
 
 	return (
 		<div className="space-y-6">
@@ -103,6 +107,26 @@ export function PaymentStep({
 					onError={onStripeError}
 					disabled={isExpired}
 				/>
+			)}
+
+			{showNoPayment && (
+				<div className="overflow-hidden rounded-3xl border border-[var(--color-line)] bg-[var(--color-surface)] card-shadow">
+					<div className="border-b border-[var(--color-line)] px-6 py-5">
+						<p className="text-base font-semibold text-[var(--color-ink)]">No payment required</p>
+					</div>
+					<div className="space-y-5 px-6 py-6 text-center">
+						<p className="text-sm text-[var(--color-ink-muted)]">
+							No payment is required — your booking is fully covered. Confirm to complete it.
+						</p>
+						<button
+							onClick={onSubmitCash}
+							disabled={submitting || isExpired}
+							className="flex w-full items-center justify-center gap-2.5 rounded-full bg-[var(--color-primary)] px-8 py-4 text-sm font-semibold text-white transition-all hover:bg-[var(--color-primary-bright)] disabled:cursor-not-allowed disabled:opacity-40"
+						>
+							{submitting ? 'Confirming…' : 'Confirm booking'}
+						</button>
+					</div>
+				</div>
 			)}
 
 			{showCash && (
