@@ -192,7 +192,7 @@ function ThankYouContent() {
 													)}
 												</div>
 												<p className="text-sm font-medium text-[var(--color-ink)]">
-													{formatPrice(item.total ?? 0, currency)}
+													{formatPrice(item.discountedTotal ?? 0, currency)}
 												</p>
 											</div>
 										))}

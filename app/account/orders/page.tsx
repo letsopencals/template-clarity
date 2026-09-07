@@ -89,7 +89,7 @@ export default function OrdersPage() {
 										{order.lineItems.map((item: OrderListLineItem, i: number) => (
 											<div key={i} className="flex justify-between text-xs text-[var(--color-ink-muted)]">
 												<span>{item.appointment?.product?.title ?? 'Service'}</span>
-												<span>{formatPrice(item.total ?? 0, order.paymentCurrencyCode)}</span>
+												<span>{formatPrice(item.discountedTotal ?? 0, order.paymentCurrencyCode)}</span>
 											</div>
 										))}
 									</div>
