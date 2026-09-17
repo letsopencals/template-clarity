@@ -7,17 +7,13 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { z } from 'zod';
 import { siteConfig } from '@/lib/site-config';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 const emailSchema = z.string().min(1, 'Email is required').email('Please enter a valid email');
 
 type Step = 'email' | 'choose' | 'code' | 'password';
 
-const inputClass =
-	'w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-bg)] px-4 py-3 text-sm text-[var(--color-ink)] outline-none transition-colors placeholder:text-[var(--color-ink-dim)] focus:border-[var(--color-primary)]';
-const primaryBtnClass =
-	'w-full bg-[var(--color-primary)] px-8 py-4 text-xs font-semibold uppercase tracking-[0.2em] text-white transition-all hover:bg-[var(--color-primary-bright)] disabled:opacity-50';
-const secondaryBtnClass =
-	'w-full border border-[var(--color-line)] px-8 py-4 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-ink)] transition-all hover:border-[var(--color-primary)] disabled:opacity-50';
 const labelClass = 'mb-2 block text-xs font-medium text-[var(--color-ink-muted)]';
 
 export default function SignInPage() {
@@ -172,18 +168,17 @@ function SignInContent() {
 					>
 						<div>
 							<label className={labelClass}>Email</label>
-							<input
+							<Input
 								type="email"
 								autoFocus
 								value={email}
 								onChange={(e) => setEmail(e.target.value)}
 								placeholder="your@email.com"
-								className={inputClass}
 							/>
 						</div>
-						<button type="submit" className={primaryBtnClass}>
+						<Button type="submit" variant="primary" size="lg" fullWidth>
 							Continue
-						</button>
+						</Button>
 					</form>
 				)}
 
@@ -194,20 +189,22 @@ function SignInContent() {
 							How would you like to sign in as{' '}
 							<span className="font-medium text-[var(--color-ink)]">{email}</span>?
 						</p>
-						<button type="button" onClick={sendCode} disabled={loading} className={primaryBtnClass}>
+						<Button type="button" variant="primary" size="lg" fullWidth onClick={sendCode} disabled={loading}>
 							{loading ? 'Sending...' : 'Email me a login code'}
-						</button>
-						<button
+						</Button>
+						<Button
 							type="button"
+							variant="outline"
+							size="lg"
+							fullWidth
 							onClick={() => {
 								setError(null);
 								setStep('password');
 							}}
 							disabled={loading}
-							className={secondaryBtnClass}
 						>
 							Use my password
-						</button>
+						</Button>
 						<button
 							type="button"
 							onClick={useDifferentEmail}
@@ -231,7 +228,7 @@ function SignInContent() {
 							We sent a 6-digit code to{' '}
 							<span className="font-medium text-[var(--color-ink)]">{email}</span>.
 						</p>
-						<input
+						<Input
 							type="text"
 							inputMode="numeric"
 							autoComplete="one-time-code"
@@ -240,11 +237,11 @@ function SignInContent() {
 							value={code}
 							onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
 							placeholder="000000"
-							className={`${inputClass} text-center text-lg tracking-[0.5em]`}
+							className="text-center text-lg tracking-[0.5em]"
 						/>
-						<button type="submit" disabled={loading} className={primaryBtnClass}>
+						<Button type="submit" variant="primary" size="lg" fullWidth disabled={loading}>
 							{loading ? 'Verifying...' : 'Sign In'}
-						</button>
+						</Button>
 						<button
 							type="button"
 							onClick={sendCode}
@@ -274,13 +271,12 @@ function SignInContent() {
 					>
 						<div>
 							<label className={labelClass}>Password</label>
-							<input
+							<Input
 								type="password"
 								autoFocus
 								value={password}
 								onChange={(e) => setPassword(e.target.value)}
 								placeholder="Enter your password"
-								className={inputClass}
 							/>
 						</div>
 						<div className="flex justify-end">
@@ -291,9 +287,9 @@ function SignInContent() {
 								Forgot password?
 							</Link>
 						</div>
-						<button type="submit" disabled={loading} className={primaryBtnClass}>
+						<Button type="submit" variant="primary" size="lg" fullWidth disabled={loading}>
 							{loading ? 'Signing in...' : 'Sign In'}
-						</button>
+						</Button>
 						<button
 							type="button"
 							onClick={() => {

@@ -2,6 +2,7 @@
 
 import type { CheckoutStartResponse, CustomerProviderCatalogItem } from '@opencals/storefront-sdk';
 import { StripePayment } from '@/components/booking/stripe-payment';
+import { Button } from '@/components/ui/button';
 
 interface PaymentStepProps {
 	providers: CustomerProviderCatalogItem[];
@@ -118,13 +119,9 @@ export function PaymentStep({
 						<p className="text-sm text-[var(--color-ink-muted)]">
 							No payment is required — your booking is fully covered. Confirm to complete it.
 						</p>
-						<button
-							onClick={onSubmitCash}
-							disabled={submitting || isExpired}
-							className="flex w-full items-center justify-center gap-2.5 rounded-full bg-[var(--color-primary)] px-8 py-4 text-sm font-semibold text-white transition-all hover:bg-[var(--color-primary-bright)] disabled:cursor-not-allowed disabled:opacity-40"
-						>
+						<Button variant="primary" size="lg" fullWidth onClick={onSubmitCash} disabled={submitting || isExpired}>
 							{submitting ? 'Confirming…' : 'Confirm booking'}
-						</button>
+						</Button>
 					</div>
 				</div>
 			)}
@@ -138,13 +135,9 @@ export function PaymentStep({
 						<p className="text-sm text-[var(--color-ink-muted)]">
 							Your booking is confirmed. Please pay when you arrive.
 						</p>
-						<button
-							onClick={onSubmitCash}
-							disabled={submitting || isExpired}
-							className="flex w-full items-center justify-center gap-2.5 rounded-full bg-[var(--color-primary)] px-8 py-4 text-sm font-semibold text-white transition-all hover:bg-[var(--color-primary-bright)] disabled:cursor-not-allowed disabled:opacity-40"
-						>
+						<Button variant="primary" size="lg" fullWidth onClick={onSubmitCash} disabled={submitting || isExpired}>
 							{submitting ? 'Confirming…' : 'Confirm booking'}
-						</button>
+						</Button>
 					</div>
 				</div>
 			)}

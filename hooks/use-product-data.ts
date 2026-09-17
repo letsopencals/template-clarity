@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import useSWR from 'swr';
 import type { ProductListItemResponse, ProductListVariant } from '@opencals/storefront-sdk';
+import { fetcher } from '@/lib/fetcher';
 
 interface UseProductDataResult {
 	product: ProductListItemResponse | null;
@@ -14,43 +16,29 @@ interface UseProductDataResult {
 	error: string | null;
 }
 
-export function useProductData(slug: string): UseProductDataResult {
-	const [product, setProduct] = useState<ProductListItemResponse | null>(null);
-	const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
+export function useProductData(
+	slug: string,
+	initialProduct: ProductListItemResponse | null = null,
+): UseProductDataResult {
+	// SWR dedupes/caches the fetch and is seeded with the server-rendered product
+	// so there's no loading flash on first paint.
+	const { data, error, isLoading } = useSWR<ProductListItemResponse>(
+		slug ? `/api/products/${slug}` : null,
+		fetcher,
+		{ fallbackData: initialProduct ?? undefined, revalidateOnFocus: false },
+	);
 
-	useEffect(() => {
-		let cancelled = false;
-
-		async function fetchProduct() {
-			try {
-				const res = await fetch(`/api/products/${slug}`);
-				if (!res.ok) {
-					const data = await res.json().catch(() => null);
-					throw new Error(data?.error || 'Service not found');
-				}
-				const data: ProductListItemResponse = await res.json();
-				if (cancelled) return;
-				setProduct(data);
-				// Prefer the variant whose slug matches the requested URL; fall back to the first.
-				const requested = data.variants?.find((v) => v.slug === slug);
-				const initialVariantId = requested?.id ?? data.variants?.[0]?.id ?? null;
-				if (initialVariantId) setSelectedVariantId(initialVariantId);
-			} catch (err) {
-				if (cancelled) return;
-				setError(err instanceof Error ? err.message : 'Service not found.');
-			} finally {
-				if (!cancelled) setLoading(false);
-			}
-		}
-
-		fetchProduct();
-		return () => { cancelled = true; };
-	}, [slug]);
-
+	const product = data ?? null;
 	const variants: ProductListVariant[] = product?.variants ?? [];
 	const hasVariants = variants.length > 0;
+
+	// Default the selected variant to the one whose slug matches the requested
+	// URL (falling back to the first), but let the caller override.
+	const [overrideVariantId, setSelectedVariantId] = useState<string | null>(null);
+	const requestedVariantId =
+		variants.find((v) => v.slug === slug)?.id ?? variants[0]?.id ?? null;
+	const selectedVariantId = overrideVariantId ?? requestedVariantId;
+
 	const activeVariant: ProductListVariant | null = hasVariants
 		? variants.find((v) => v.id === selectedVariantId) || variants[0] || null
 		: null;
@@ -62,7 +50,7 @@ export function useProductData(slug: string): UseProductDataResult {
 		hasVariants,
 		selectedVariantId,
 		setSelectedVariantId,
-		loading,
-		error,
+		loading: isLoading && !product,
+		error: error ? (error instanceof Error ? error.message : 'Service not found.') : null,
 	};
 }
