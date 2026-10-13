@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { formatDuration, formatPrice } from '@/lib/format';
 import { useDateFormatter } from '@/hooks/use-date-formatter';
 import type { AppointmentDetailResponse, AppointmentStatusType, CurrentAvailabilitySlot } from '@opencals/storefront-sdk';
+import { onSessionExpired } from '@/lib/session-expired';
 
 type ModalState = 'none' | 'cancel' | 'reschedule';
 
@@ -20,6 +21,7 @@ export default function AppointmentDetailPage() {
 	const fetchAppointment = useCallback(async () => {
 		try {
 			const res = await fetch(`/api/account/appointments/${appointmentId}`);
+			if (res.status === 401) return onSessionExpired();
 			if (res.ok) {
 				setAppointment(await res.json());
 			}
@@ -352,6 +354,7 @@ function CancelModal({
 		setError('');
 		try {
 			const res = await fetch(`/api/account/appointments/${appointmentId}/cancel`, { method: 'PUT' });
+			if (res.status === 401) return onSessionExpired();
 			if (res.ok) {
 				onCanceled();
 			} else {
@@ -416,6 +419,7 @@ function RescheduleModal({
 	const [slots, setSlots] = useState<CurrentAvailabilitySlot[]>([]);
 	const [selectedSlot, setSelectedSlot] = useState<CurrentAvailabilitySlot | null>(null);
 	const [loadingSlots, setLoadingSlots] = useState(false);
+	const [slotsError, setSlotsError] = useState('');
 	const [submitting, setSubmitting] = useState(false);
 	const [error, setError] = useState('');
 
@@ -434,8 +438,11 @@ function RescheduleModal({
 		setLoadingSlots(true);
 		setSlots([]);
 		setSelectedSlot(null);
+		setSlotsError('');
 		try {
-			const params = new URLSearchParams({ productId, date, timezone });
+			// `excludeAppointmentId` stops this appointment's own current slot from blocking itself.
+			// No `duration`: the API rejects it on fixed-length products, and the default length is right here.
+			const params = new URLSearchParams({ productId, date, timezone, excludeAppointmentId: appointment.id });
 			if (appointment.staffMemberId) params.set('staffMemberId', appointment.staffMemberId);
 			if (appointment.locationId) params.set('locationId', appointment.locationId);
 
@@ -445,13 +452,16 @@ function RescheduleModal({
 				// Availability response is an array of slot objects
 				const availableSlots: CurrentAvailabilitySlot[] = Array.isArray(data) ? data : data?.slots ?? [];
 				setSlots(availableSlots);
+			} else {
+				const data = await res.json().catch(() => null);
+				setSlotsError(data?.error ?? 'Could not load available times. Please try again.');
 			}
 		} catch {
-			// silently fail
+			setSlotsError('Could not load available times. Please try again.');
 		} finally {
 			setLoadingSlots(false);
 		}
-	}, [productId, timezone, appointment.staffMemberId, appointment.locationId]);
+	}, [productId, timezone, appointment.id, appointment.staffMemberId, appointment.locationId]);
 
 	useEffect(() => {
 		if (selectedDate) {
@@ -479,6 +489,7 @@ function RescheduleModal({
 					},
 				}),
 			});
+			if (res.status === 401) return onSessionExpired();
 			if (res.ok) {
 				onRescheduled();
 			} else {
@@ -531,6 +542,8 @@ function RescheduleModal({
 									<div key={i} className="h-10 animate-pulse rounded bg-[var(--color-surface)]" />
 								))}
 							</div>
+						) : slotsError ? (
+							<p className="mt-3 text-sm text-red-600">{slotsError}</p>
 						) : slots.length === 0 ? (
 							<p className="mt-3 text-sm text-[var(--color-ink-muted)]">No available times for this date.</p>
 						) : (
