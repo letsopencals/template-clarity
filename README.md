@@ -40,11 +40,13 @@ That's it. Once deployed, you'll have the same fully functional booking site as 
 
 Clear Care is designed around how patients actually arrive: with a worry, not a department name. The homepage opens with "How can we help today?", the Care Finder suggests the right visit, and the rest of the site (rooms of care, clinicians, video visits, three clinics) is there for anyone who wants to browse first. Everything you see is driven by your Opencals data.
 
-![Homepage hero](docs/homepage-hero.png)
+![Home page — "Care that has time for you." with the "How can we help today?" Care Finder strip](docs/homepage-hero.png)
 
-![Why Clear Care — trust markers](docs/why-clear-care.png)
+![Care Finder — the recommended visit with its next free times, your answers and the emergency notice](docs/care-finder.png)
 
-![Departments — browse care by specialty](docs/departments.png)
+![Rooms of care — the nine departments, each a room with its visits and clinicians](docs/departments.png)
+
+![Clinician profile — focus, languages, clinics and "Book with Dr. Patel"](docs/clinician.png)
 
 ---
 
@@ -74,11 +76,17 @@ A boutique private practice in afternoon light: cream plaster, honey oak, dusty 
 
 A live appointment card fills in as you go and is stamped "Held for you" when you reserve. Answers travel with each visit, so a family cart keeps every patient's notes separate.
 
-![The booking page](docs/booking-page.png)
+![Booking composer — the day ribbon, slots with the clinicians free at each time, and the live appointment card](docs/booking-page.png)
+
+![Pre-visit notes on lined paper, with a photo upload, next to the filled-in appointment card](docs/booking-notes.png)
 
 ### Checkout and the visit pass
 - **Checkout** (`/checkout`) has two steps: contact details, then payment. Stripe Elements is themed to match the site, and stores that offer it can let patients pay at the clinic. A stack of visit cards, a promo code field and the cart hold (with Extend) sit alongside.
 - **Thank-you** shows a visit pass for each booking with what to bring, add to calendar (.ics and Google Calendar) and, for video visits, when the join link opens.
+
+![Checkout — your details, then "Pay at the clinic", beside the stack of visit cards](docs/checkout-page.png)
+
+![Visit pass — "You're booked. Breathe." with the stamped pass and how to prepare](docs/confirmed.png)
 
 ### My Care
 The customer account (`/account`) is a care record rather than an order list:
@@ -89,6 +97,12 @@ The customer account (`/account`) is a care record rather than an order list:
 - a visits timeline, and a visit record with pre-visit notes and photos, invoices and "Rate your care";
 - reschedule and cancel, shown only when the store's policy allows it;
 - billing, and a profile with communication preferences (email, SMS, WhatsApp).
+
+![My Care — the next visit with its countdown, prep checklist and care team](docs/account.png)
+
+![Visit record — the visit, what to bring, the clinic and the change-time and calendar actions](docs/visit-record.png)
+
+![On mobile — home, the Care Finder, day & time with the appointment-card bar, and the held visit](docs/mobile.png)
 
 ### Sign-in
 Code login comes first: patients enter their email and receive a 6-digit code. Password sign-in stays available as a second option. One-time email links from Opencals (view, reschedule or cancel a visit, leave feedback, verify email, reset password) all resolve through `/link/[token]`, which signs the patient in and takes them to the right place.
