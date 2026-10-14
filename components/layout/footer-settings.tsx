@@ -13,8 +13,10 @@ export function FooterSettings() {
 	const { locations, selectedLocationId, setSelectedLocationId } = useLocation();
 	const { timezone, setTimezone } = useTimezone();
 	const hydrated = useHydrated();
-	// Node and the browser ship different IANA lists — only the current zone on the server.
-	const zones = hydrated ? Intl.supportedValuesOf('timeZone') : [timezone];
+	// The server's zone and IANA list differ from the visitor's, so options render after hydration only.
+	// Some engines omit common aliases from the list, so the current zone is always included.
+	const supported = hydrated ? Intl.supportedValuesOf('timeZone') : [];
+	const zones = !hydrated ? [] : supported.includes(timezone) ? supported : [timezone, ...supported];
 
 	// Online locations are never globally selectable — they only apply inside the
 	// booking flow of the services they’re attached to.

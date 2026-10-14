@@ -35,7 +35,8 @@ export function CountUp({
 	className,
 }: CountUpProps) {
 	const ref = useRef<HTMLSpanElement>(null);
-	const inView = useInView(ref, { once: true, margin: '0px 0px -10% 0px' });
+	// No negative margin: a stat sitting at the fold must still count up instead of showing 0.
+	const inView = useInView(ref, { once: true });
 	const reduce = useReducedMotion();
 	const [display, setDisplay] = useState<number>(value);
 	const started = useRef(false);
