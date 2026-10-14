@@ -3,15 +3,25 @@ import { cache } from 'react';
 import {
 	StoreService,
 	ProductService,
+	ProductCollectionService,
+	StaffMemberService,
+	LocationService,
+	CheckoutQuestionService,
+	type CheckoutQuestionResponse,
 	type StorePublicSettings,
 	type ProductListItemResponse,
+	type ProductCollectionResponse,
 } from '@opencals/storefront-sdk';
+import { publicPayload } from '@/lib/public-payload';
+import { sortClinicians, toPublicClinician, type DepartmentIndex, type PublicClinician } from '@/lib/clinicians';
 
 /**
  * Server-only data readers. Each is wrapped in React.cache() so repeated calls
  * within a single request are deduped. RSCs call these directly instead of
  * going through the template's own /api/* routes. Never import this module from
  * a 'use client' file — the /api/* routes remain the client/SWR data source.
+ * Everything that reaches the browser goes through `publicPayload` or a
+ * public-safe mapper.
  */
 
 export const getStoreSettings = cache(async (): Promise<StorePublicSettings | null> => {
@@ -23,36 +33,123 @@ export const getStoreSettings = cache(async (): Promise<StorePublicSettings | nu
 	}
 });
 
-export const getProducts = cache(
-	async (locationId?: string): Promise<ProductListItemResponse[]> => {
-		try {
-			const { data } = await ProductService.list({ query: { take: 50, locationId } });
-			return data?.data ?? [];
-		} catch {
-			return [];
-		}
-	},
-);
+export const getProducts = cache(async (locationId?: string): Promise<ProductListItemResponse[]> => {
+	try {
+		const { data } = await ProductService.list({ query: { take: 100, locationId } });
+		return publicPayload(data?.data ?? []);
+	} catch {
+		return [];
+	}
+});
 
 /**
- * The booking flow needs each variant's `staffMembers` (with their `locations`)
- * and `locations` — that richer shape lives on the list response
- * (`ProductListItemResponse`), not the leaner `getBySlug` detail. So we fetch
- * the catalog and return the group that owns the requested slug (either the
- * group's own slug or one of its variant slugs). Mirrors
+ * The product group that owns `slug` (the group's slug or one of its variants).
+ * The composer needs each variant's `staffMembers` (with `locations`) and
+ * `locations`, which only the list shape carries. Mirrors
  * `app/api/products/[slug]/route.ts`.
  */
-export const getProduct = cache(
-	async (slug: string): Promise<ProductListItemResponse | null> => {
-		try {
-			const { data } = await ProductService.list({ query: { take: 100 } });
-			const items = data?.data ?? [];
-			const match = items.find(
-				(item) => item.slug === slug || item.variants?.some((variant) => variant.slug === slug),
-			);
-			return match ?? null;
-		} catch {
-			return null;
-		}
-	},
-);
+export const getProduct = cache(async (slug: string): Promise<ProductListItemResponse | null> => {
+	const items = await getProducts();
+	return items.find((item) => item.slug === slug || item.variants?.some((v) => v.slug === slug)) ?? null;
+});
+
+export const getCollections = cache(async (): Promise<ProductCollectionResponse[]> => {
+	try {
+		const { data } = await ProductCollectionService.list({ query: { take: 50 } });
+		return publicPayload(data?.data ?? []);
+	} catch {
+		return [];
+	}
+});
+
+export const getCollection = cache(async (slug: string): Promise<ProductCollectionResponse | null> => {
+	try {
+		const { data } = await ProductCollectionService.getBySlug({ path: { slug } });
+		return data ? publicPayload(data) : null;
+	} catch {
+		return null;
+	}
+});
+
+/** variant slug → department (collection) slug. */
+export const getDepartmentIndex = cache(async (): Promise<DepartmentIndex> => {
+	const out: DepartmentIndex = {};
+	for (const c of await getCollections()) for (const p of c.products ?? []) if (p.slug && !out[p.slug]) out[p.slug] = c.slug;
+	return out;
+});
+
+export const getClinicians = cache(async (): Promise<PublicClinician[]> => {
+	try {
+		const [{ data }, index] = await Promise.all([StaffMemberService.list({ query: { take: 100 } }), getDepartmentIndex()]);
+		return sortClinicians((data?.data ?? []).map((s) => toPublicClinician(s, index)));
+	} catch {
+		return [];
+	}
+});
+
+export const getClinician = cache(async (slug: string): Promise<PublicClinician | null> => {
+	try {
+		const [{ data }, index] = await Promise.all([StaffMemberService.getBySlug({ path: { slug } }), getDepartmentIndex()]);
+		return data?.id ? toPublicClinician(data, index) : null;
+	} catch {
+		return null;
+	}
+});
+
+/** Public-safe clinic card. `type` lets callers split physical clinics from the video location. */
+export interface PublicClinic {
+	id: string;
+	slug: string;
+	title: string;
+	type: 'physical' | 'online' | 'delivery';
+	addressLines: string[];
+	city: string | null;
+	latitude: number | null;
+	longitude: number | null;
+	scheduleId: string | null;
+}
+
+export const getClinics = cache(async (): Promise<PublicClinic[]> => {
+	try {
+		const { data } = await LocationService.list({ query: { take: 50 } });
+		return (data?.data ?? []).map((l) => {
+			const cityLine = [l.city, [l.state, l.postalCode].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+			return {
+				id: l.id,
+				slug: l.slug,
+				title: l.title ?? 'Clear Care',
+				type: l.type,
+				addressLines: l.displayAddress
+					? splitDisplayAddress(l.displayAddress)
+					: [l.addressLine1, l.addressLine2, cityLine].filter((x): x is string => !!x),
+				city: l.city ?? null,
+				latitude: l.latitude ?? null,
+				longitude: l.longitude ?? null,
+				scheduleId: l.scheduleId ?? null,
+			};
+		});
+	} catch {
+		return [];
+	}
+});
+
+function splitDisplayAddress(display: string): string[] {
+	const lines = display.split('\n').map((x) => x.trim()).filter(Boolean);
+	if (lines.length > 1) return lines;
+	const [first, ...rest] = display.split(',');
+	return [(first ?? '').trim(), rest.join(',').trim()].filter(Boolean);
+}
+
+/**
+ * A variant's pre-visit (checkout) questions, English translations. Questions
+ * carry no merchant-private data (titles, options, file limits), so they are
+ * passed to the composer as-is; `/api/products/[slug]/questions` mirrors this.
+ */
+export const getCheckoutQuestions = cache(async (productId: string): Promise<CheckoutQuestionResponse[]> => {
+	try {
+		const { data } = await CheckoutQuestionService.listTranslations({ path: { productId, language: 'en' } });
+		return Array.isArray(data) ? data : [];
+	} catch {
+		return [];
+	}
+});

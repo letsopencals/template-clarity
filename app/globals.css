@@ -1,321 +1,429 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&family=Inter:wght@300;400;500;600;700&display=swap');
 @import 'tailwindcss';
 
 /*
- * Clear Care Medical — warm, modern clinical light theme (ivory + honey-oak +
- * dusty medical-blue + brass), pulled from the clinic photography.
- *
- * Token names describe what each color IS (not a scaffold legacy):
- *   --color-bg*       warm ivory/sand surfaces (page + deep)
- *   --color-surface*  card / raised surfaces (near-white → sand)
- *   --color-ink*      text (espresso → warm taupe → sand-grey)
- *   --color-primary*  dusty medical blue (buttons, links, accents)
- *   --color-tint*     soft blue chip/highlight tints
- *   --color-brass*    warm brass/honey accent (stars, glows, selected states)
- *   --color-sand      section background a touch deeper than --color-bg
- *   --color-line*     warm hairline borders
+ * Clear Care Medical — "Warm Practice". See DESIGN.md for the full contract.
+ * A boutique private practice in afternoon light: cream plaster, honey oak,
+ * dusty steel-blue walls and scrubs, brass fixtures, sage greenery — all sampled
+ * from the clinic photography.
  */
 @theme {
-	/* Surfaces — warm ivory & sand, pulled from the hero's cream walls + honey oak */
-	--color-bg: #FAF5EC;
-	--color-bg-deep: #F1E7D5;
-	--color-surface: #FFFDF8;
-	--color-surface-2: #EDE3D1;
-	--color-surface-3: #DED0B9;
+	/* Surfaces — cream plaster & paper */
+	--color-paper: #fbf8f2;
+	--color-card: #fffdf9;
+	--color-cream: #f3ebdd;
+	--color-cream-deep: #e9dcc6;
 
-	/* Ink — warm espresso-charcoal (from the hero's shadows / window frames) */
-	--color-ink: #2C2A24;
-	--color-ink-muted: #6E6353;
-	--color-ink-dim: #A2957D;
+	/* Ink — navy-ink, the window frames and scrub shadows */
+	--color-ink: #21303a;
+	--color-ink-muted: #5d6870;
+	--color-ink-dim: #96a0a6;
 
-	/* Warm near-black — used for modal backdrops (bg-charcoal/50) and subtle
-	 * status-badge tints (bg-charcoal/10). Enables bg/text/border-charcoal. */
-	--color-charcoal: #26231C;
+	/* Steel — the accent walls and scrubs. The single action colour. */
+	--color-steel: #3f6e8c;
+	--color-steel-bright: #4f84a6;
+	--color-steel-deep: #23465c;
+	--color-steel-night: #182f3e;
+	--color-steel-tint: #e3ecf1;
 
-	/* Accent — dusty medical blue, matching the hero's accent wall + scrubs
-	 * (a warmer, softer cousin of the store's #005B8E primary) */
-	--color-primary: #216E90;
-	--color-primary-bright: #2E88B0;
-	--color-primary-dark: #184F68;
+	/* Wood & metal — warm tones, never for actions */
+	--color-oak: #b9844f;
+	--color-honey: #e2b97f;
+	--color-honey-soft: #f6e9d3;
+	--color-brass: #b08d57;
+	--color-brass-soft: #efe4d0;
 
-	/* Soft blue tints for chips / highlights */
-	--color-tint: #E4EDF1;
-	--color-tint-strong: #CBDFE8;
+	/* Sage — the fiddle-leaf figs. "Available", "done", calm states. */
+	--color-sage: #8a9e7e;
+	--color-sage-deep: #56704c;
+	--color-sage-soft: #e7ede1;
 
-	/* Warm brass / honey secondary accent (from the hero's brass fixtures + oak) —
-	 * used for star ratings, glows, and selected-state soft backgrounds. */
-	--color-brass: #C1924A;
-	--color-brass-soft: #F5EBD6;
+	/* Clay — warnings / destructive / emergency. Warm, not alarm-red. */
+	--color-clay: #b4583f;
+	--color-clay-soft: #f6e2db;
 
-	/* Warm sand — section backgrounds a touch deeper than --color-bg */
-	--color-sand: #F5EDDF;
+	--color-line: rgba(33, 48, 58, 0.1);
+	--color-line-strong: rgba(33, 48, 58, 0.2);
 
-	/* Organic green — pulled from the hero's fiddle-leaf plant. Adds the "living",
-	 * botanical warmth that ties the brand to nature. Sage = muted foliage,
-	 * leaf = deep accent, sage-soft = tint (mirrors --color-brass-soft). */
-	--color-sage: #7C9A6E;
-	--color-sage-bright: #93AF83;
-	--color-leaf: #4F7A52;
-	--color-leaf-deep: #35603C;
-	--color-sage-soft: #E9EFE2;
+	/* Type — next/font sets the variables on <html> (app/layout.tsx) */
+	--font-display: var(--font-fraunces), 'Fraunces', Georgia, serif;
+	--font-body: var(--font-figtree), 'Figtree', system-ui, sans-serif;
+	--font-sans: var(--font-figtree), 'Figtree', system-ui, sans-serif;
+	--font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
-	--color-line: rgba(60, 48, 30, 0.10);
-	--color-line-strong: rgba(60, 48, 30, 0.18);
+	/* Shape */
+	--radius-window: 1.75rem;
+	--radius-card: 1.25rem;
+	--radius-field: 0.875rem;
 
-	/* Typography */
-	--font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
-	--font-body: 'Inter', system-ui, sans-serif;
-
-	/* Animations */
-	--animate-fade-up: fade-up 0.8s ease both;
+	/* Motion — calm, no bounce */
+	--ease-calm: cubic-bezier(0.22, 1, 0.36, 1);
+	--ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+	--animate-fade-up: fade-up 0.8s var(--ease-calm) both;
 	--animate-fade-in: fade-in 0.8s ease both;
-	--animate-marquee: marquee 25s linear infinite;
-	--animate-pulse-primary: pulse-primary 1.6s ease-in-out infinite;
-	--animate-sway: sway 6s ease-in-out infinite;
-	--animate-sway-slow: sway 9s ease-in-out infinite;
-	--animate-float-soft: float-soft 7s ease-in-out infinite;
-	--animate-light-drift: light-drift 12s ease-in-out infinite;
-	--animate-grow-line: grow-line 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+	--animate-marquee: marquee 50s linear infinite;
+	--animate-ink: ink 0.9s var(--ease-calm) both;
+	--animate-daylight: daylight 9s ease-in-out infinite;
+	--animate-breathe: breathe 5.5s ease-in-out infinite;
+	--animate-pulse-dot: pulse-dot 2.2s ease-out infinite;
+	--animate-stamp: stamp 0.7s var(--ease-calm) both;
 
-	/* Spacing */
+	/* Elevation — warm, soft, low */
+	--shadow-card: 0 1px 0 rgba(33, 48, 58, 0.04), 0 18px 48px -24px rgba(33, 48, 58, 0.22);
+	--shadow-float: 0 30px 80px -32px rgba(33, 48, 58, 0.38);
+	--shadow-paper: 0 1px 0 rgba(33, 48, 58, 0.05), 0 2px 6px rgba(33, 48, 58, 0.05), 0 22px 40px -26px rgba(86, 60, 30, 0.28);
+
 	--spacing-section: 8rem;
 	--spacing-section-sm: 5rem;
 }
 
-/* Base styles */
+/* ------------------------------------------------------------------ Base */
+
 html {
-	scroll-behavior: smooth;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+	text-rendering: optimizeLegibility;
+}
+
+/* Lenis owns smooth scrolling; native smooth-scroll only without it. */
+html:not(.lenis) {
+	scroll-behavior: smooth;
+}
+html.lenis,
+html.lenis body {
+	height: auto;
+}
+.lenis.lenis-stopped {
+	overflow: clip;
 }
 
 body {
 	font-family: var(--font-body);
 	color: var(--color-ink);
-	background-color: var(--color-bg);
+	background-color: var(--color-paper);
 }
 
-/* Selection */
 ::selection {
-	background-color: var(--color-primary);
-	color: #FFFFFF;
+	background-color: var(--color-steel);
+	color: #ffffff;
 }
 
-/* Scrollbar */
+:focus-visible {
+	outline: 2px solid var(--color-steel);
+	outline-offset: 3px;
+}
+
 ::-webkit-scrollbar {
-	width: 10px;
-	height: 10px;
+	width: 8px;
 }
-
 ::-webkit-scrollbar-track {
-	background: var(--color-bg-deep);
+	background: var(--color-cream);
 }
-
 ::-webkit-scrollbar-thumb {
-	background: var(--color-surface-3);
-	border-radius: 5px;
+	background: var(--color-cream-deep);
+	border-radius: 999px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-	background: var(--color-ink-dim);
+	background: var(--color-oak);
 }
 
-/* Hide scrollbar for horizontal strips */
+.no-scrollbar {
+	scrollbar-width: none;
+}
 .no-scrollbar::-webkit-scrollbar {
 	display: none;
 }
-.no-scrollbar {
-	-ms-overflow-style: none;
-	scrollbar-width: none;
-}
-
-/* Display heading utility */
-.heading-display {
-	font-family: var(--font-display);
-	font-weight: 700;
-	line-height: 1.02;
-	letter-spacing: -0.02em;
-}
-
-.heading-display-italic {
-	font-family: var(--font-display);
-	font-style: italic;
-	font-weight: 600;
-	line-height: 1.02;
-	letter-spacing: -0.01em;
-}
-
-/* Image placeholder gradient (light-theme).
- * Uses background-image (not the `background:` shorthand) so combining this class
- * with Tailwind's `bg-cover` / `bg-center` doesn't get its size/position reset. */
-.image-placeholder {
-	background-image:
-		linear-gradient(135deg, rgba(193, 146, 74, 0.12) 0%, rgba(255, 255, 255, 0) 55%),
-		linear-gradient(135deg, var(--color-surface-2) 0%, var(--color-surface-3) 100%);
-}
-
-/* Horizontal rule accent */
-.hr-accent {
-	height: 2px;
-	background-color: var(--color-primary);
-	border: none;
-}
-
-/* Dotted leader line ("service ........ $price") */
-.leader-line {
-	flex: 1;
-	margin: 0 1rem;
-	border-bottom: 1px dotted var(--color-line-strong);
-	transform: translateY(-4px);
-}
-
-/* Link hover animation */
-.link-underline {
-	position: relative;
-	display: inline-block;
-}
-
-.link-underline::after {
-	content: '';
-	position: absolute;
-	bottom: -2px;
-	left: 0;
-	width: 0;
-	height: 1.5px;
-	background-color: currentColor;
-	transition: width 0.3s ease;
-}
-
-.link-underline:hover::after {
-	width: 100%;
-}
-
-/* Subtle grid texture overlay for tinted sections */
-.noise-overlay {
-	position: relative;
-}
-
-.noise-overlay::before {
-	content: '';
-	position: absolute;
-	inset: 0;
-	opacity: 0.5;
-	background-image:
-		linear-gradient(var(--color-line) 1px, transparent 1px),
-		linear-gradient(90deg, var(--color-line) 1px, transparent 1px);
-	background-size: 44px 44px;
-	pointer-events: none;
-	z-index: 1;
-}
-
-/* Vertical writing for the "BOOK NOW" rail */
-.writing-vertical {
-	writing-mode: vertical-rl;
-	transform: rotate(180deg);
-}
-
-/* Soft elevation for cards */
-.card-shadow {
-	box-shadow: 0 1px 2px rgba(60, 48, 30, 0.04), 0 12px 32px -12px rgba(60, 48, 30, 0.14);
-}
-
-/* Rounded card elevation (Denty-style soft cards) */
-.card-shadow-lg {
-	box-shadow: 0 2px 4px rgba(60, 48, 30, 0.04), 0 24px 60px -24px rgba(60, 48, 30, 0.22);
-}
 
 /*
- * Liquid glass — translucent panels with a backdrop blur, used as accents over
- * photography (hero stat cards, sticky nav, floating chips). Kept tasteful, not
- * everywhere. `.glass` sits on light/photo backgrounds; `.glass-dark` for glass
- * over the medical-blue gradient.
+ * Component classes live in a layer so Tailwind utilities can override them
+ * (`eyebrow text-[0.6rem]`, `window rounded-card`).
  */
-.glass {
-	background: rgba(255, 255, 255, 0.62);
-	backdrop-filter: blur(18px) saturate(160%);
-	-webkit-backdrop-filter: blur(18px) saturate(160%);
-	border: 1px solid rgba(255, 255, 255, 0.7);
-	box-shadow: 0 8px 32px -10px rgba(60, 48, 30, 0.22);
+@layer components {
+	/* ---------------------------------------------------------------- Type */
+
+	/* Fraunces at full softness: rounded serifs, warm, never clinical. */
+	.font-display,
+	.display-xl,
+	.display-lg,
+	.display-md,
+	.display-sm,
+	.display-xs {
+		font-family: var(--font-display);
+		font-optical-sizing: auto;
+		font-variation-settings: 'SOFT' 100, 'WONK' 0;
+	}
+
+	/* Display scale (DESIGN.md §2). Put the emotional words in <em>. */
+	.display-xl,
+	.display-lg,
+	.display-md,
+	.display-sm,
+	.display-xs {
+		font-weight: 360;
+		letter-spacing: -0.03em;
+		line-height: 0.98;
+		text-wrap: balance;
+	}
+	.display-xl {
+		font-size: clamp(3.1rem, 8.4vw, 8.75rem);
+		line-height: 0.92;
+		letter-spacing: -0.04em;
+	}
+	.display-lg {
+		font-size: clamp(2.5rem, 5.6vw, 5.5rem);
+		line-height: 0.96;
+	}
+	.display-md {
+		font-size: clamp(2rem, 3.8vw, 3.6rem);
+		line-height: 1.02;
+	}
+	.display-sm {
+		font-size: clamp(1.55rem, 2.3vw, 2.25rem);
+		line-height: 1.08;
+		letter-spacing: -0.02em;
+	}
+	.display-xs {
+		font-size: 1.375rem;
+		line-height: 1.15;
+		letter-spacing: -0.015em;
+	}
+	.display-xl em,
+	.display-lg em,
+	.display-md em,
+	.display-sm em,
+	.display-xs em,
+	.italic-display {
+		font-family: var(--font-display);
+		font-style: italic;
+		font-weight: 330;
+		font-variation-settings: 'SOFT' 100, 'WONK' 1;
+		color: var(--color-steel);
+	}
+
+	/* Small label above headings: "01 · Find care" */
+	.eyebrow {
+		font-family: var(--font-body);
+		font-size: 0.72rem;
+		font-weight: 600;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+	}
+
+	/* Prices, times, dates, countdowns, room numbers */
+	.tabular {
+		font-family: var(--font-mono);
+		font-variant-numeric: tabular-nums lining-nums;
+		letter-spacing: -0.01em;
+	}
+
+	/* Long-form copy (department and about pages) */
+	.prose-calm {
+		max-width: 62ch;
+		font-size: 1.0625rem;
+		line-height: 1.7;
+		color: var(--color-ink-muted);
+	}
+
+	/* ------------------------------------------------------------- Layout */
+
+	.container-x {
+		margin-inline: auto;
+		width: 100%;
+		max-width: 1360px;
+		padding-inline: 1.25rem;
+	}
+	@media (min-width: 48rem) {
+		.container-x {
+			padding-inline: 2.5rem;
+		}
+	}
+	.section-y {
+		padding-block: 5.5rem;
+	}
+	@media (min-width: 48rem) {
+		.section-y {
+			padding-block: 8.5rem;
+		}
+	}
+
+	/* --------------------------------------------------------------- Shape */
+
+	/*
+	 * The window — Clear Care's image frame, from the tall daylight windows in
+	 * every clinic photo. Soft radius + an inset brass hairline. Images only.
+	 */
+	.window {
+		position: relative;
+		overflow: hidden;
+		border-radius: var(--radius-window);
+		isolation: isolate;
+	}
+	.window::after {
+		content: '';
+		position: absolute;
+		inset: 0.6rem;
+		z-index: 2;
+		pointer-events: none;
+		border: 1px solid rgba(239, 228, 208, 0.55);
+		border-radius: calc(var(--radius-window) - 0.6rem);
+	}
+	.window-sm {
+		position: relative;
+		overflow: hidden;
+		border-radius: var(--radius-card);
+		isolation: isolate;
+	}
+	/* Slow sunlight moving across a framed image. Add inside a .window. */
+	.daylight {
+		position: absolute;
+		inset: -20%;
+		z-index: 1;
+		pointer-events: none;
+		background: linear-gradient(
+			115deg,
+			rgba(255, 244, 222, 0) 35%,
+			rgba(255, 244, 222, 0.28) 48%,
+			rgba(255, 244, 222, 0) 62%
+		);
+		mix-blend-mode: soft-light;
+		animation: var(--animate-daylight);
+	}
+
+	/* Clinic stationery: lined paper for the pre-visit notes */
+	.ruled {
+		background-color: var(--color-card);
+		background-image: repeating-linear-gradient(
+			180deg,
+			transparent 0,
+			transparent 2.1rem,
+			rgba(63, 110, 140, 0.09) 2.1rem,
+			rgba(63, 110, 140, 0.09) calc(2.1rem + 1px)
+		);
+	}
+	.paper {
+		background-color: var(--color-card);
+		box-shadow: var(--shadow-paper);
+		border-radius: var(--radius-card);
+	}
+
+	/* Perforated edge (appointment card, visit pass) */
+	.perforation {
+		height: 1px;
+		background-image: linear-gradient(90deg, var(--color-line-strong) 50%, transparent 50%);
+		background-size: 9px 1px;
+	}
+
+	/* Dotted leader: "Standard consultation ........ $120" */
+	.leader-line {
+		flex: 1;
+		min-width: 1rem;
+		margin: 0 0.75rem;
+		border-bottom: 1px dotted var(--color-line-strong);
+		transform: translateY(-0.3em);
+	}
+
+	.hairline {
+		height: 1px;
+		border: none;
+		background: var(--color-line);
+	}
+
+	/* ------------------------------------------------------------ Surfaces */
+
+	/* Only the scrolled header is glass in Warm Practice. */
+	.glass-nav {
+		background-color: rgba(251, 248, 242, 0.78);
+		-webkit-backdrop-filter: blur(18px) saturate(1.3);
+		backdrop-filter: blur(18px) saturate(1.3);
+	}
+
+	.scrim-bottom {
+		background: linear-gradient(0deg, rgba(24, 47, 62, 0.62) 0%, rgba(24, 47, 62, 0) 100%);
+	}
+
+	/* Missing-image fallback: warm plaster, never a broken box */
+	.image-placeholder {
+		background-color: var(--color-cream-deep);
+		background-image:
+			radial-gradient(70% 60% at 30% 25%, rgba(255, 248, 235, 0.7) 0%, rgba(255, 248, 235, 0) 60%),
+			linear-gradient(160deg, var(--color-cream) 0%, var(--color-cream-deep) 100%);
+	}
+
+	/* Paper grain. Needs no extra markup. */
+	.grain {
+		position: relative;
+		isolation: isolate;
+	}
+	.grain::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		pointer-events: none;
+		opacity: 0.045;
+		mix-blend-mode: multiply;
+		background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+	}
+	.bg-steel-deep.grain::before,
+	.bg-steel-night.grain::before {
+		mix-blend-mode: screen;
+		opacity: 0.05;
+	}
+
+	/* --------------------------------------------------------------- Links */
+
+	.link-underline {
+		position: relative;
+		display: inline-block;
+	}
+	.link-underline::after {
+		content: '';
+		position: absolute;
+		bottom: -2px;
+		left: 0;
+		width: 100%;
+		height: 1px;
+		background-color: currentColor;
+		transform: scaleX(0);
+		transform-origin: right;
+		transition: transform 0.5s var(--ease-expo);
+	}
+	.link-underline:hover::after,
+	.link-underline:focus-visible::after {
+		transform: scaleX(1);
+		transform-origin: left;
+	}
+
+	/* "Available now" dot */
+	.live-dot {
+		position: relative;
+		display: inline-block;
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 999px;
+		background: var(--color-sage-deep);
+	}
+	.live-dot::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		background: var(--color-sage);
+		animation: var(--animate-pulse-dot);
+	}
 }
 
-.glass-strong {
-	background: rgba(255, 255, 255, 0.82);
-	backdrop-filter: blur(24px) saturate(180%);
-	-webkit-backdrop-filter: blur(24px) saturate(180%);
-	border: 1px solid rgba(255, 255, 255, 0.8);
-	box-shadow: 0 10px 40px -12px rgba(60, 48, 30, 0.26);
-}
+/* ------------------------------------------------------------ Keyframes */
 
-.glass-dark {
-	background: rgba(255, 255, 255, 0.14);
-	backdrop-filter: blur(16px) saturate(150%);
-	-webkit-backdrop-filter: blur(16px) saturate(150%);
-	border: 1px solid rgba(255, 255, 255, 0.28);
-	box-shadow: 0 8px 32px -12px rgba(0, 69, 107, 0.4);
-}
-
-.glass-nav {
-	background: rgba(250, 245, 236, 0.74);
-	backdrop-filter: blur(20px) saturate(180%);
-	-webkit-backdrop-filter: blur(20px) saturate(180%);
-	/* Soft border on ALL sides. Without this, a bare Tailwind `border`/`!border`
-	   utility sets width on every side but leaves the color at `currentColor`
-	   (Tailwind v4 default), producing dark top/side borders. */
-	border: 1px solid rgba(60, 48, 30, 0.09);
-}
-
-/* Soft radial "aura" backdrops behind hero / CTA sections */
-.aura-blue {
-	background:
-		radial-gradient(60% 55% at 78% 12%, rgba(193, 146, 74, 0.18) 0%, rgba(193, 146, 74, 0) 60%),
-		radial-gradient(50% 50% at 8% 90%, rgba(33, 110, 144, 0.12) 0%, rgba(33, 110, 144, 0) 55%);
-}
-
-/* Organic aura — a warmer, living cousin of .aura-blue that layers a soft sage
- * glow with brass + blue, for the redesigned hero / botanical sections. */
-.aura-organic {
-	background:
-		radial-gradient(55% 50% at 82% 8%, rgba(193, 146, 74, 0.20) 0%, rgba(193, 146, 74, 0) 58%),
-		radial-gradient(48% 55% at 10% 18%, rgba(124, 154, 110, 0.22) 0%, rgba(124, 154, 110, 0) 60%),
-		radial-gradient(60% 60% at 20% 100%, rgba(33, 110, 144, 0.10) 0%, rgba(33, 110, 144, 0) 55%);
-}
-
-/* Soft leaf-green gradient for botanical accents / 3D lighting parity. */
-.gradient-leaf {
-	background: linear-gradient(135deg, var(--color-leaf-deep) 0%, var(--color-leaf) 50%, var(--color-sage) 120%);
-}
-
-/* Medical-blue gradient used on CTA bands / telehealth panels — kept all-blue so
- * it stays clean against the warm surfaces (no muddy blue→brass mix). */
-.gradient-medical {
-	background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 55%, var(--color-primary-bright) 120%);
-}
-
-/* Pill chip for department / category tags */
-.chip {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.4rem;
-	border-radius: 9999px;
-	padding: 0.4rem 0.85rem;
-	font-size: 0.72rem;
-	font-weight: 600;
-	background: var(--color-brass-soft);
-	color: var(--color-primary);
-}
-
-/* Keyframes */
 @keyframes fade-up {
 	from {
 		opacity: 0;
-		transform: translateY(30px);
+		transform: translateY(24px);
 	}
 	to {
 		opacity: 1;
 		transform: translateY(0);
 	}
 }
-
 @keyframes fade-in {
 	from {
 		opacity: 0;
@@ -324,7 +432,6 @@ body {
 		opacity: 1;
 	}
 }
-
 @keyframes marquee {
 	from {
 		transform: translateX(0);
@@ -333,43 +440,77 @@ body {
 		transform: translateX(-50%);
 	}
 }
-
-@keyframes pulse-primary {
-	0%, 100% {
-		box-shadow: 0 0 0 0 rgba(33, 110, 144, 0.4);
+/* "Write in": a field on the appointment card being filled in by hand */
+@keyframes ink {
+	from {
+		opacity: 0;
+		clip-path: inset(0 100% 0 0);
+		filter: blur(2px);
+	}
+	to {
+		opacity: 1;
+		clip-path: inset(0 0 0 0);
+		filter: blur(0);
+	}
+}
+@keyframes daylight {
+	0%,
+	100% {
+		transform: translateX(-18%);
 	}
 	50% {
-		box-shadow: 0 0 0 8px rgba(33, 110, 144, 0);
+		transform: translateX(18%);
+	}
+}
+@keyframes breathe {
+	0%,
+	100% {
+		transform: scale(1);
+		opacity: 0.85;
+	}
+	50% {
+		transform: scale(1.04);
+		opacity: 1;
+	}
+}
+@keyframes pulse-dot {
+	0% {
+		transform: scale(1);
+		opacity: 0.7;
+	}
+	100% {
+		transform: scale(2.8);
+		opacity: 0;
+	}
+}
+/* The brass seal pressed onto a card */
+@keyframes stamp {
+	0% {
+		opacity: 0;
+		transform: scale(1.35) rotate(-14deg);
+	}
+	60% {
+		opacity: 1;
+		transform: scale(0.96) rotate(-8deg);
+	}
+	100% {
+		opacity: 1;
+		transform: scale(1) rotate(-8deg);
 	}
 }
 
-/* Gentle botanical sway — for plant leaves / organic SVG groups.
- * transform-origin should be set at the base (bottom) of the element. */
-@keyframes sway {
-	0%, 100% { transform: rotate(-1.6deg); }
-	50% { transform: rotate(1.8deg); }
-}
-
-/* Slow vertical float — floating glass cards / 3D-feeling chips. */
-@keyframes float-soft {
-	0%, 100% { transform: translateY(0); }
-	50% { transform: translateY(-10px); }
-}
-
-/* Drifting light shaft — subtle opacity + skew shimmer for window light. */
-@keyframes light-drift {
-	0%, 100% { opacity: 0.35; transform: translateX(-2%) skewX(-6deg); }
-	50% { opacity: 0.6; transform: translateX(2%) skewX(-6deg); }
-}
-
-/* Animated stroke draw — for the "leaf/pulse line" weaving through headings.
- * Pair with stroke-dasharray/offset set inline on the path. */
-@keyframes grow-line {
-	from { stroke-dashoffset: var(--line-length, 1000); }
-	to { stroke-dashoffset: 0; }
-}
-
-/* Respect reduced-motion: kill the infinite ambient loops. */
 @media (prefers-reduced-motion: reduce) {
-	.motion-safe-only { animation: none !important; }
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.001ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.001ms !important;
+		scroll-behavior: auto !important;
+	}
+	.animate-marquee,
+	.daylight,
+	.live-dot::after {
+		animation: none !important;
+	}
 }

@@ -1,10 +1,25 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
+import { Fraunces, Figtree, Geist_Mono } from 'next/font/google';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { Providers } from '@/components/providers';
 import { siteConfig } from '@/lib/site-config';
 import { getStoreSettings } from '@/lib/server-data';
 import './globals.css';
+
+const fraunces = Fraunces({
+	subsets: ['latin'],
+	style: ['normal', 'italic'],
+	axes: ['opsz', 'SOFT', 'WONK'],
+	variable: '--font-fraunces',
+	display: 'swap',
+});
+const figtree = Figtree({ subsets: ['latin'], variable: '--font-figtree', display: 'swap' });
+const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono', display: 'swap' });
+
+export const viewport: Viewport = {
+	themeColor: '#fbf8f2',
+};
 
 const title = `${siteConfig.name} — ${siteConfig.tagline}`;
 
@@ -41,7 +56,7 @@ export default async function RootLayout({
 	const initialSettings = await getStoreSettings();
 
 	return (
-		<html lang="en">
+		<html lang="en" className={`${fraunces.variable} ${figtree.variable} ${geistMono.variable}`} suppressHydrationWarning>
 			<body>
 				{/* Allow parent frames to control scrolling via postMessage */}
 				<script
@@ -67,8 +82,11 @@ export default async function RootLayout({
 							email: siteConfig.contact.email,
 							address: {
 								'@type': 'PostalAddress',
-								streetAddress: siteConfig.contact.address.split('\n')[0],
-								addressLocality: siteConfig.contact.address.split('\n')[1]?.trim(),
+								streetAddress: siteConfig.contact.address.street,
+								addressLocality: siteConfig.contact.address.locality,
+								addressRegion: siteConfig.contact.address.region,
+								postalCode: siteConfig.contact.address.postalCode,
+								addressCountry: siteConfig.contact.address.country,
 							},
 						}),
 					}}

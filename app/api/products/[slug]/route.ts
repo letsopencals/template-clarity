@@ -2,6 +2,7 @@ import '@/lib/opencals';
 import { ProductService } from '@opencals/storefront-sdk';
 import { NextRequest, NextResponse } from 'next/server';
 import { handleApiError } from '@/lib/api-error-handler';
+import { publicPayload } from '@/lib/public-payload';
 
 /**
  * Returns the full product (with variants, staff, and locations) for a given slug.
@@ -28,7 +29,7 @@ export async function GET(
 			return NextResponse.json({ error: 'Service not found' }, { status: 404 });
 		}
 
-		return NextResponse.json(match);
+		return NextResponse.json(publicPayload(match));
 	} catch (err) {
 		return handleApiError(err);
 	}

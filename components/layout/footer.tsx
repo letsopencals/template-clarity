@@ -1,144 +1,82 @@
-'use client';
-
 import Link from 'next/link';
-import { useLocation } from '@/contexts/location-context';
-import { useTimezone } from '@/contexts/timezone-context';
+import { CareLine } from '@/components/motifs/care-line';
+import { Seal } from '@/components/motifs/seal';
 import { siteConfig } from '@/lib/site-config';
+import { Logo } from './logo';
+import { FooterSettings } from './footer-settings';
 
-function FooterSettings() {
-	const { locations, selectedLocationId, setSelectedLocationId } = useLocation();
-	const { timezone, setTimezone } = useTimezone();
+const HOURS = siteConfig.contact.hours.split('\n');
 
-	// Online locations are never globally selectable — they only apply inside the
-	// booking flow of the services they’re attached to.
-	const selectableLocations = locations.filter((l) => l.type !== 'online');
-	const hasLocations = selectableLocations.length > 1;
-
-	return (
-		<div className="flex flex-wrap items-center gap-6">
-			{hasLocations && (
-				<div className="flex items-center gap-2">
-					<svg className="h-3.5 w-3.5 text-[var(--color-ink)]/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-						<path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-						<path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-					</svg>
-					<select
-						value={selectedLocationId ?? ''}
-						onChange={(e) => setSelectedLocationId(e.target.value || null)}
-						className="border-none bg-transparent text-xs text-[var(--color-ink)]/60 outline-none hover:text-[var(--color-ink)] focus:text-[var(--color-ink)]"
-					>
-						<option value="" className="bg-[var(--color-bg-deep)] text-[var(--color-ink)]">All Locations</option>
-						{selectableLocations.map((l) => (
-							<option key={l.id} value={l.id} className="bg-[var(--color-bg-deep)] text-[var(--color-ink)]">
-								{l.title ?? 'Location'}
-							</option>
-						))}
-					</select>
-				</div>
-			)}
-			<div className="flex items-center gap-2">
-				<svg className="h-3.5 w-3.5 text-[var(--color-ink)]/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-					<path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-				</svg>
-				<select
-					value={timezone}
-					onChange={(e) => setTimezone(e.target.value)}
-					className="max-w-[200px] border-none bg-transparent text-xs text-[var(--color-ink)]/60 outline-none hover:text-[var(--color-ink)] focus:text-[var(--color-ink)]"
-				>
-					{Intl.supportedValuesOf('timeZone').map((tz) => (
-						<option key={tz} value={tz} className="bg-[var(--color-bg-deep)] text-[var(--color-ink)]">
-							{tz.replace(/_/g, ' ')}
-						</option>
-					))}
-				</select>
-			</div>
-		</div>
-	);
-}
-
+/** Footer: blurb, link columns, emergency line, hours, and the global selectors. */
 export function Footer() {
 	return (
-		<footer className="bg-[var(--color-bg-deep)] text-[var(--color-ink)]">
-			<div className="mx-auto max-w-[1400px] px-6 lg:px-10">
-				{/* Main footer content */}
-				<div className="grid gap-12 border-b border-[var(--color-line)] py-20 md:grid-cols-2 lg:grid-cols-4">
-					{/* Brand column */}
-					<div className="lg:col-span-2">
-						<Link href="/" className="inline-block">
-							<span className="font-display text-3xl font-semibold tracking-tight">
-								{siteConfig.logo.text}{' '}
-								<span className="text-[var(--color-primary)]">{siteConfig.logo.accent}</span>
-							</span>
-						</Link>
-						<p className="mt-6 max-w-md text-sm leading-relaxed text-[var(--color-ink-muted)]">
-							{siteConfig.footer.description}
-						</p>
-						<div className="mt-8 flex gap-6">
-							{siteConfig.footer.socials.map((social) => (
-								<a
-									key={social}
-									href="#"
-									className="text-[0.7rem] font-medium uppercase tracking-[0.22em] text-[var(--color-ink-dim)] transition-colors hover:text-[var(--color-primary)]"
-								>
-									{social}
+		<footer className="grain relative overflow-hidden bg-cream text-ink">
+			<div className="container-x relative z-10">
+				<CareLine settled tone="brass" className="h-8 pt-2" />
+
+				<div className="grid grid-cols-1 gap-14 py-16 md:grid-cols-6 md:py-20 lg:grid-cols-12">
+					<div className="min-w-0 md:col-span-6 lg:col-span-5">
+						<Logo />
+						<p className="mt-6 max-w-sm text-[15px] leading-relaxed text-ink-muted">{siteConfig.footer.blurb}</p>
+						<div className="mt-8 flex items-center gap-5">
+							<Seal size={72} />
+							<div className="flex flex-col gap-1 text-sm">
+								<a href={siteConfig.contact.phoneHref} className="tabular text-ink transition-colors hover:text-steel">
+									{siteConfig.contact.phone}
 								</a>
-							))}
+								<a href={`mailto:${siteConfig.contact.email}`} className="text-ink-muted transition-colors hover:text-steel">
+									{siteConfig.contact.email}
+								</a>
+							</div>
 						</div>
 					</div>
 
-					{/* Services column */}
-					<div>
-						<h4 className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-[var(--color-ink-dim)]">
-							Services
-						</h4>
-						<ul className="mt-6 space-y-3">
-							{siteConfig.footer.serviceLinks.map((link) => (
-								<li key={link.href}>
-									<Link
-										href={link.href}
-										className="text-sm text-[var(--color-ink)]/75 transition-colors hover:text-[var(--color-primary)]"
-									>
-										{link.label}
-									</Link>
-								</li>
-							))}
-						</ul>
-					</div>
+					{siteConfig.footer.columns.map((col) => (
+						<div key={col.title} className="min-w-0 md:col-span-2">
+							<h2 className="eyebrow text-oak">{col.title}</h2>
+							<ul className="mt-5 flex flex-col gap-3">
+								{col.links.map((link) => (
+									<li key={link.href}>
+										<Link href={link.href} className="link-underline text-[15px] text-ink/80 transition-colors hover:text-steel">
+											{link.label}
+										</Link>
+									</li>
+								))}
+							</ul>
+						</div>
+					))}
 
-					{/* Company column */}
-					<div>
-						<h4 className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-[var(--color-ink-dim)]">
-							Company
-						</h4>
-						<ul className="mt-6 space-y-3">
-							{siteConfig.footer.companyLinks.map((link) => (
-								<li key={link.href}>
-									<Link
-										href={link.href}
-										className="text-sm text-[var(--color-ink)]/75 transition-colors hover:text-[var(--color-primary)]"
-									>
-										{link.label}
-									</Link>
+					<div className="min-w-0 md:col-span-2 lg:col-span-3">
+						<h2 className="eyebrow text-oak">Clinic hours</h2>
+						<ul className="mt-5 flex flex-col gap-2 text-[15px] text-ink/80">
+							{HOURS.map((h) => (
+								<li key={h} className="tabular text-[13px]">
+									{h}
 								</li>
 							))}
 						</ul>
+						<div className="mt-6 rounded-card border border-clay/25 bg-clay-soft/60 p-4">
+							<p className="text-[13px] font-semibold text-clay">{siteConfig.emergency.short}</p>
+							<p className="mt-1 text-[13px] leading-relaxed text-ink-muted">Nurse line (non-urgent): <a href={`tel:${siteConfig.contact.nurseLine.replace(/[^+\d]/g, '')}`} className="tabular whitespace-nowrap text-ink hover:text-steel">{siteConfig.contact.nurseLine}</a></p>
+						</div>
 					</div>
 				</div>
 
-				{/* Bottom bar */}
-				<div className="flex flex-col items-center justify-between gap-4 py-8 md:flex-row">
+				<div className="flex flex-col gap-5 border-t border-line py-8 md:flex-row md:items-center md:justify-between">
 					<FooterSettings />
-					<p className="text-xs text-[var(--color-ink-dim)]">
-						&copy; {new Date().getFullYear()} {siteConfig.name}. All rights reserved. Powered by{' '}
-						<a
-							href="https://opencals.com"
-							target="_blank"
-							rel="noopener noreferrer"
-							className="text-[var(--color-ink-muted)] transition-colors hover:text-[var(--color-primary)]"
-						>
-							Opencals
-						</a>
-					</p>
+					<div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-ink-dim">
+						{siteConfig.footer.socials.map((s) => (
+							<a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="uppercase tracking-[0.16em] transition-colors hover:text-steel">
+								{s.label}
+							</a>
+						))}
+						<p suppressHydrationWarning>
+							&copy; {new Date().getFullYear()} {siteConfig.name}. Powered by{' '}
+							<a href="https://opencals.com" target="_blank" rel="noopener noreferrer" className="text-ink-muted transition-colors hover:text-steel">
+								Opencals
+							</a>
+						</p>
+					</div>
 				</div>
 			</div>
 		</footer>

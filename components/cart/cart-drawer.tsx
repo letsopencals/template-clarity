@@ -1,235 +1,177 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { useId, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
+import { AnimatePresence, motion, type Transition } from 'framer-motion';
 import { useCart } from '@/contexts/cart-context';
-import { formatPrice, formatDuration } from '@/lib/format';
-import { useDateFormatter } from '@/hooks/use-date-formatter';
+import { useReducedMotion } from '@/components/motion/use-reduced-motion';
+import { DURATION, EASE_OUT, SPRING_SOFT } from '@/components/motion/easing';
+import { buttonClasses } from '@/components/ui/button';
+import { useModalOverlay, useMounted } from '@/components/ui/use-overlay';
+import { siteConfig } from '@/lib/site-config';
+import { AppointmentCard } from './appointment-card';
+import { CartTotals } from './cart-totals';
+import { EmptyCard } from './empty-card';
+import { HoldBar } from './hold-bar';
+import { PromoCode } from './promo-code';
+import { useCartLines } from './cart-line';
 
 interface CartDrawerProps {
 	open: boolean;
 	onClose: () => void;
 }
 
-export function CartDrawer({ open, onClose }: CartDrawerProps) {
-	const { cart, removeItem, updateAddOnQuantity, removeAddOnItem, timeRemaining } = useCart();
-	const { formatCustom } = useDateFormatter();
+const OVERLAY_INITIAL = { opacity: 0 };
+const OVERLAY_ANIMATE = { opacity: 1 };
+const OVERLAY_TRANSITION: Transition = { duration: DURATION.fast };
+const PANEL_INITIAL = { x: '100%' };
+const PANEL_ANIMATE = { x: 0 };
+const PANEL_TRANSITION: Transition = SPRING_SOFT;
+const FADE_TRANSITION: Transition = { duration: 0.2 };
+const CARD_INITIAL = { opacity: 0, y: 24 };
+const CARD_ANIMATE = { opacity: 1, y: 0 };
+const CARD_EXIT = { opacity: 0, x: 40, transition: { duration: 0.3, ease: EASE_OUT } };
 
-	const items = cart?.items ?? [];
+function cardTransition(i: number): Transition {
+	return { duration: DURATION.base, ease: EASE_OUT, delay: 0.12 + i * 0.07 };
+}
+
+/**
+ * "Your visits" — the right-hand drawer: the appointment cards the composer
+ * filled in, the hold countdown with Extend, a promo code and the total.
+ * Portalled to <body> so no transformed ancestor can trap it.
+ */
+export function CartDrawer({ open, onClose }: CartDrawerProps) {
+	const mounted = useMounted();
+	if (!mounted) return null;
+	return createPortal(<CartDrawerPanel open={open} onClose={onClose} />, document.body);
+}
+
+function CartDrawerPanel({ open, onClose }: CartDrawerProps) {
+	const panelRef = useRef<HTMLDivElement>(null);
+	const titleId = useId();
+	const reduce = useReducedMotion();
+	const { cart, removeItem, updateAddOnQuantity, removeAddOnItem, timeRemaining, extendCart } = useCart();
+	const lines = useCartLines(cart);
+
+	useModalOverlay(open, onClose, panelRef);
+
+	const count = lines.length;
 	const isExpired = timeRemaining !== null && timeRemaining <= 0;
-	const minutes = timeRemaining !== null ? Math.floor(timeRemaining / 60) : null;
-	const seconds = timeRemaining !== null ? timeRemaining % 60 : null;
 
 	return (
 		<AnimatePresence>
-			{open && (
-				<>
-					{/* Backdrop */}
+			{open ? (
+				<div className="fixed inset-0 z-[60]" key="cart-drawer">
 					<motion.div
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						exit={{ opacity: 0 }}
-						transition={{ duration: 0.2 }}
-						className="fixed inset-0 z-50 bg-[var(--color-bg-deep)]/60 backdrop-blur-sm"
+						aria-hidden
+						className="absolute inset-0 bg-steel-night/45"
+						initial={OVERLAY_INITIAL}
+						animate={OVERLAY_ANIMATE}
+						exit={OVERLAY_INITIAL}
+						transition={OVERLAY_TRANSITION}
 						onClick={onClose}
 					/>
 
-					{/* Drawer */}
 					<motion.div
-						initial={{ x: '100%' }}
-						animate={{ x: 0 }}
-						exit={{ x: '100%' }}
-						transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-						className="fixed top-0 right-0 z-50 flex h-full w-full max-w-md flex-col border-l border-[var(--color-line)] bg-[var(--color-bg)] shadow-2xl"
+						ref={panelRef}
+						role="dialog"
+						aria-modal="true"
+						aria-labelledby={titleId}
+						tabIndex={-1}
+						initial={reduce ? OVERLAY_INITIAL : PANEL_INITIAL}
+						animate={reduce ? OVERLAY_ANIMATE : PANEL_ANIMATE}
+						exit={reduce ? OVERLAY_INITIAL : PANEL_INITIAL}
+						transition={reduce ? FADE_TRANSITION : PANEL_TRANSITION}
+						className="absolute inset-y-0 right-0 flex w-full max-w-[460px] flex-col bg-paper text-ink shadow-float outline-none sm:rounded-l-[28px]"
 					>
-						{/* Header */}
-						<div className="flex items-center justify-between border-b border-[var(--color-line)] px-6 py-5">
-							<h2 className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-[var(--color-ink)]">
-								Your Cart ({items.length})
-							</h2>
+						<header className="flex items-start justify-between gap-4 border-b border-line px-5 pt-6 pb-5 sm:px-7">
+							<div className="min-w-0">
+								<p className="eyebrow text-ink-muted">
+									Held for you <span className="tabular text-brass">· {String(count).padStart(2, '0')}</span>
+								</p>
+								<h2 id={titleId} className="display-sm mt-2 text-ink">
+									Your <em>visits</em>
+								</h2>
+							</div>
 							<button
+								type="button"
 								onClick={onClose}
-								className="flex h-8 w-8 items-center justify-center text-[var(--color-ink-dim)] transition-colors hover:text-[var(--color-ink)]"
-								aria-label="Close cart"
+								aria-label="Close your visits"
+								className="-mr-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink transition-colors hover:bg-cream hover:text-steel focus-visible:outline-2 focus-visible:outline-steel"
 							>
-								<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-									<path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+								<svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.4} aria-hidden>
+									<path d="M3 3l10 10M13 3L3 13" />
 								</svg>
 							</button>
-						</div>
+						</header>
 
-						{/* Timer */}
-						{timeRemaining !== null && !isExpired && (
-							<div
-								className={`px-6 py-2 text-center text-xs ${
-									timeRemaining <= 60
-										? 'bg-red-500/10 text-red-300'
-										: timeRemaining <= 120
-											? 'bg-amber-500/10 text-amber-300'
-											: 'bg-[var(--color-surface)]/60 text-[var(--color-ink-muted)]'
-								}`}
-							>
-								Expires in{' '}
-								<span className="font-semibold">
-									{minutes}:{String(seconds).padStart(2, '0')}
-								</span>
+						{count > 0 && timeRemaining !== null ? (
+							<div className="border-b border-line bg-card/70 px-5 py-3.5 sm:px-7">
+								<HoldBar timeRemaining={timeRemaining} expiresAt={cart?.expiresAt} onExtend={extendCart} onNavigate={onClose} />
 							</div>
-						)}
+						) : null}
 
-						{isExpired && (
-							<div className="bg-amber-500/10 px-6 py-2 text-center text-xs text-amber-300">
-								Cart expired. Please book again.
-							</div>
-						)}
-
-						{/* Items */}
-						<div className="flex-1 overflow-y-auto px-6 py-4">
-							{items.length === 0 ? (
-								<div className="flex h-full flex-col items-center justify-center text-center">
-									<svg className="h-12 w-12 text-[var(--color-ink)]/10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-										<path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-									</svg>
-									<p className="mt-4 text-sm text-[var(--color-ink-muted)]">Your cart is empty</p>
-									<Link
-										href="/services"
-										onClick={onClose}
-										className="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-primary)] hover:underline"
-									>
-										Browse Services
-									</Link>
-								</div>
+						<div data-lenis-prevent className="flex-1 overflow-y-auto overscroll-contain px-5 py-6 sm:px-7">
+							{count === 0 ? (
+								<EmptyCard onNavigate={onClose} />
 							) : (
-								<div className="divide-y divide-[var(--color-line)]">
-									{items.map((item) => {
-										const addOnItems = item.addOnItems ?? [];
-										return (
-											<div key={item.id} className="py-4 first:pt-0 last:pb-0">
-												<div className="flex items-start justify-between gap-3">
-													<div className="flex-1">
-														<p className="text-sm font-medium text-[var(--color-ink)]">
-															{item.appointment?.product?.title ?? 'Service'}
-														</p>
-														{item.appointment?.from && (
-															<p className="mt-1 text-xs text-[var(--color-ink-muted)]">
-																{formatCustom(item.appointment.from, 'ddd, MMM D')}
-																{' at '}
-																{formatCustom(item.appointment.from, 'h:mm A')}
-															</p>
-														)}
-														{item.appointment?.product?.duration && (
-															<p className="mt-0.5 text-xs text-[var(--color-ink-dim)]">
-																{formatDuration(item.appointment.product.duration)}
-															</p>
-														)}
-													</div>
-													<div className="flex items-start gap-2">
-														<span className="text-sm font-semibold text-[var(--color-primary)]">
-															{formatPrice(item.originalUnitPrice ?? 0, cart?.paymentCurrencyCode)}
-														</span>
-														<button
-															onClick={() => removeItem(item.id)}
-															className="flex h-6 w-6 items-center justify-center text-[var(--color-ink-dim)] transition-colors hover:text-red-400"
-															aria-label="Remove item"
-														>
-															<svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-																<path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-															</svg>
-														</button>
-													</div>
-												</div>
-
-												{/* Nested add-on items */}
-												{addOnItems.length > 0 && (
-													<div className="mt-3 space-y-2 border-l-2 border-[var(--color-line-strong)] pl-3">
-														{addOnItems.map((aoi) => {
-															const isDuration = aoi.addOn?.durationMultiplied ?? false;
-															const atMax =
-																!isDuration &&
-																aoi.addOn?.maxQuantity != null &&
-																aoi.quantity >= aoi.addOn.maxQuantity;
-															return (
-																<div key={aoi.id} className="flex items-center justify-between gap-2">
-																	<div className="min-w-0 flex-1">
-																		<p className="truncate text-xs font-medium text-[var(--color-ink)]">
-																			{aoi.addOn?.title ?? 'Add-on'}
-																		</p>
-																	</div>
-																	<div className="flex items-center gap-1">
-																		{!isDuration && (
-																			<>
-																				<button
-																					onClick={() => updateAddOnQuantity(aoi.id, aoi.quantity - 1)}
-																					className="flex h-6 w-6 items-center justify-center rounded-full border border-[var(--color-line-strong)] text-[var(--color-ink)] transition-colors hover:border-[var(--color-primary)]"
-																					aria-label="Decrease add-on quantity"
-																				>
-																					<svg className="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-																						<path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" />
-																					</svg>
-																				</button>
-																				<span className="w-5 text-center text-xs font-semibold text-[var(--color-ink)]">
-																					{aoi.quantity}
-																				</span>
-																				<button
-																					disabled={atMax}
-																					onClick={() => updateAddOnQuantity(aoi.id, aoi.quantity + 1)}
-																					className="flex h-6 w-6 items-center justify-center rounded-full border border-[var(--color-line-strong)] text-[var(--color-ink)] transition-colors hover:border-[var(--color-primary)] disabled:opacity-30"
-																					aria-label="Increase add-on quantity"
-																				>
-																					<svg className="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-																						<path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-																					</svg>
-																				</button>
-																			</>
-																		)}
-																		<span className="ml-1 whitespace-nowrap text-xs font-semibold text-[var(--color-primary)]">
-																			{formatPrice(aoi.discountedSubtotal, cart?.paymentCurrencyCode)}
-																		</span>
-																		<button
-																			onClick={() => removeAddOnItem(aoi.id)}
-																			className="flex h-6 w-6 items-center justify-center text-[var(--color-ink-dim)] transition-colors hover:text-red-400"
-																			aria-label="Remove add-on"
-																		>
-																			<svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-																				<path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-																			</svg>
-																		</button>
-																	</div>
-																</div>
-															);
-														})}
-													</div>
-												)}
-											</div>
-										);
-									})}
-								</div>
+								<ul className="space-y-4">
+									<AnimatePresence initial={!reduce}>
+										{lines.map((line, i) => (
+											<motion.li
+												key={line.id}
+												layout={!reduce}
+												initial={reduce ? false : CARD_INITIAL}
+												animate={CARD_ANIMATE}
+												exit={reduce ? undefined : CARD_EXIT}
+												transition={cardTransition(i)}
+											>
+												<AppointmentCard
+													line={line}
+													index={i}
+													currency={cart?.paymentCurrencyCode}
+													editable
+													compact
+													onRemove={removeItem}
+													onAddOnQuantity={updateAddOnQuantity}
+													onAddOnRemove={removeAddOnItem}
+												/>
+											</motion.li>
+										))}
+									</AnimatePresence>
+								</ul>
 							)}
 						</div>
 
-						{/* Footer */}
-						{items.length > 0 && (
-							<div className="border-t border-[var(--color-line)] px-6 py-5">
-								<div className="mb-4 flex justify-between">
-									<span className="text-sm font-semibold text-[var(--color-ink)]">Total</span>
-									<span className="text-xl font-bold text-[var(--color-primary)]">
-										{formatPrice(cart?.total ?? cart?.subtotal ?? 0, cart?.paymentCurrencyCode)}
-									</span>
+						{count > 0 && cart ? (
+							<footer className="border-t border-line bg-card px-5 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:rounded-bl-[28px] sm:px-7">
+								<PromoCode />
+								<CartTotals cart={cart} className="mt-5" />
+								{isExpired ? (
+									<Link href="/care" onClick={onClose} className={buttonClasses({ variant: 'primary', size: 'lg', fullWidth: true, className: 'mt-5' })}>
+										Find a new time
+									</Link>
+								) : (
+									<Link href="/checkout" onClick={onClose} className={buttonClasses({ variant: 'primary', size: 'lg', fullWidth: true, className: 'mt-5' })}>
+										Continue to checkout
+										<span aria-hidden className="transition-transform duration-500 group-hover/btn:translate-x-1">
+											→
+										</span>
+									</Link>
+								)}
+								<div className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-xs">
+									<Link href="/care" onClick={onClose} className="link-underline text-ink-muted hover:text-ink">
+										Book another visit
+									</Link>
+									<p className="text-ink-dim">{siteConfig.emergency.short}</p>
 								</div>
-								<Link
-									href="/services"
-									onClick={onClose}
-									className="flex w-full items-center justify-center rounded-full border border-[var(--color-line-strong)] px-8 py-3.5 text-[0.72rem] font-semibold uppercase tracking-[0.22em] text-[var(--color-ink)] transition-colors hover:border-[var(--color-ink)]/40"
-								>
-									Browse Services
-								</Link>
-								<p className="mt-3 text-center text-[0.6rem] uppercase tracking-[0.22em] text-[var(--color-ink-dim)]">
-									Complete payment on the booking page
-								</p>
-							</div>
-						)}
+							</footer>
+						) : null}
 					</motion.div>
-				</>
-			)}
+				</div>
+			) : null}
 		</AnimatePresence>
 	);
 }

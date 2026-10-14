@@ -1,35 +1,39 @@
 import type { MetadataRoute } from 'next';
-import type { ProductListItemResponse, ProductListVariant } from '@opencals/storefront-sdk';
-import '@/lib/opencals';
-import { ProductService } from '@opencals/storefront-sdk';
+import { getCatalog } from '@/lib/catalog-server';
+import { getClinicians } from '@/lib/server-data';
 import { siteConfig } from '@/lib/site-config';
+
+type Entry = MetadataRoute.Sitemap[number];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 	const base = siteConfig.url;
+	const now = new Date();
+	const page = (path: string, priority: number, changeFrequency: Entry['changeFrequency'] = 'weekly'): Entry => ({
+		url: `${base}${path}`,
+		lastModified: now,
+		changeFrequency,
+		priority,
+	});
 
-	const staticRoutes: MetadataRoute.Sitemap = [
-		{url: base, lastModified: new Date(), changeFrequency: 'weekly', priority: 1},
-		{url: `${base}/departments`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.9},
-		{url: `${base}/services`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8},
-		{url: `${base}/about`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7},
-		{url: `${base}/contact`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7},
+	const staticRoutes = [
+		page('', 1),
+		page('/care', 0.9),
+		page('/departments', 0.9),
+		page('/services', 0.8),
+		page('/clinicians', 0.8),
+		page('/video-visits', 0.8),
+		page('/about', 0.6, 'monthly'),
+		page('/contact', 0.7, 'monthly'),
 	];
 
-	try {
-		const { data: response } = await ProductService.list({ query: { take: 50 } });
-		const products: ProductListItemResponse[] = response?.data ?? [];
-		const productRoutes: MetadataRoute.Sitemap = products
-		.flatMap((p) => p.variants ?? [])
-		.map((variant: ProductListVariant) => ({
-			url: `${base}/booking/${variant.slug}`,
-			lastModified: new Date(),
-			changeFrequency: 'weekly' as const,
-			priority: 0.8,
-		}));
-		return [...staticRoutes, ...productRoutes];
-	} catch {
-		// SDK not available — return static routes only
-	}
+	// Both helpers swallow API errors and return empty lists.
+	const [{ visits, departments }, clinicians] = await Promise.all([getCatalog(), getClinicians()]);
+	const departmentSlugs = departments.length ? departments.map((d) => d.slug) : Object.keys(siteConfig.departments);
 
-	return staticRoutes;
+	return [
+		...staticRoutes,
+		...departmentSlugs.map((slug) => page(`/departments/${slug}`, 0.8)),
+		...clinicians.map((c) => page(`/clinicians/${c.slug}`, c.curated ? 0.7 : 0.5, 'monthly')),
+		...visits.map((v) => page(`/booking/${v.slug}`, 0.7)),
+	];
 }

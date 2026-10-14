@@ -1,42 +1,44 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
-import { getProducts } from '@/lib/server-data';
-import { ServicesHero } from '@/components/services/services-hero';
-import { ServicesList } from '@/components/services/services-list';
+import { getCatalog } from '@/lib/catalog-server';
+import { PageHero } from '@/components/layout/page-hero';
+import { FeeSchedule } from '@/components/services/fee-schedule';
+import { buttonClasses } from '@/components/ui/button';
 
-// Server Component: products for the default (all-locations) view are fetched
-// on the server and passed to <ServicesList> as SWR fallbackData, so the list
-// paints immediately. Location filtering happens client-side via SWR.
+export const metadata: Metadata = {
+	title: 'Visits & fees',
+	description: 'Every visit at Clear Care Medical, how long it takes and what it costs — clear self-pay prices, up front.',
+};
+
 export default async function ServicesPage() {
-	const products = await getProducts();
+	const { visits, departments, currency } = await getCatalog();
+	const placed = new Set(departments.flatMap((d) => d.visits.map((v) => v.slug)));
+	const other = visits.filter((v) => !placed.has(v.slug));
 
 	return (
 		<>
-			<ServicesHero />
-
-			{/* Service list */}
-			<section id="services-list" className="bg-[var(--color-bg)] pb-20 lg:pb-32">
-				<div className="mx-auto max-w-[1400px] px-6 lg:px-10">
-					<ServicesList initialProducts={products} />
-				</div>
-			</section>
-
-			{/* Bottom CTA */}
-			<section id="services-cta" className="bg-[var(--color-primary)] py-20">
-				<div className="mx-auto max-w-[1400px] px-6 text-center lg:px-10">
-					<h2 className="heading-display text-4xl text-[var(--color-bg)] md:text-5xl">
-						Not sure what you need?
-					</h2>
-					<p className="mx-auto mt-4 max-w-md text-base text-[var(--color-bg)]/75">
-						Get in touch — our team will point you to the right department and clinician.
-					</p>
-					<div className="mt-8">
-						<Link
-							href="/contact"
-							className="inline-flex items-center gap-3 rounded-full bg-[var(--color-bg)] px-10 py-4 text-[0.72rem] font-semibold uppercase tracking-[0.22em] text-[var(--color-ink)] transition-all hover:bg-[var(--color-bg-deep)]"
-						>
-							Contact Us
-						</Link>
-					</div>
+			<PageHero
+				eyebrow="Visits & fees"
+				title={
+					<>
+						Clear prices, <em>no surprises.</em>
+					</>
+				}
+				lead="Every visit we offer, how long it takes and the self-pay fee. Most insurance is accepted — add your provider in your pre-visit notes and we’ll check before you arrive."
+			>
+				<Link href="/care" className={buttonClasses({ variant: 'outline', size: 'lg' })}>
+					Not sure which? Find care
+				</Link>
+			</PageHero>
+			<section className="section-y bg-paper pt-12">
+				<div className="container-x">
+					{visits.length ? (
+						<FeeSchedule departments={departments} other={other} currency={currency} />
+					) : (
+						<p className="rounded-card border border-dashed border-line-strong p-10 text-center text-ink-muted">
+							We couldn’t load our fees just now. Please try again in a moment, or call us.
+						</p>
+					)}
 				</div>
 			</section>
 		</>

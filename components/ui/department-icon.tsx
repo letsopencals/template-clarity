@@ -13,7 +13,22 @@ export type DepartmentIconName =
 	| 'tooth'
 	| 'brain'
 	| 'apple'
-	| 'flask';
+	| 'flask'
+	// Care Finder, trust markers and discovery chrome
+	| 'clipboard'
+	| 'shield'
+	| 'lock'
+	| 'clock'
+	| 'card'
+	| 'video'
+	| 'pin'
+	| 'phone'
+	| 'search'
+	| 'arrow'
+	| 'user'
+	| 'users'
+	| 'check'
+	| 'globe';
 
 const PATHS: Record<DepartmentIconName, React.ReactNode> = {
 	stethoscope: (
@@ -61,10 +76,85 @@ const PATHS: Record<DepartmentIconName, React.ReactNode> = {
 			<path d="M8 14h8" />
 		</>
 	),
+	clipboard: (
+		<>
+			<rect x="5.5" y="4.5" width="13" height="16" rx="2" />
+			<path d="M9 4.5V3.5h6v1M9 10h6M9 13.5h6M9 17h3.5" />
+		</>
+	),
+	shield: (
+		<>
+			<path d="M12 3 5 6v5c0 4.4 3 8 7 10 4-2 7-5.6 7-10V6l-7-3Z" />
+			<path d="m9 12 2 2 4-4" />
+		</>
+	),
+	lock: (
+		<>
+			<rect x="5" y="10.5" width="14" height="9.5" rx="2" />
+			<path d="M8 10.5V8a4 4 0 0 1 8 0v2.5M12 14.5v2" />
+		</>
+	),
+	clock: (
+		<>
+			<circle cx="12" cy="12" r="8.5" />
+			<path d="M12 7.5V12l3 2" />
+		</>
+	),
+	card: (
+		<>
+			<rect x="3" y="6" width="18" height="12" rx="2" />
+			<path d="M3 10h18M7 14.5h3" />
+		</>
+	),
+	video: (
+		<>
+			<rect x="3" y="7" width="12" height="10" rx="2" />
+			<path d="m15 10.5 6-3v9l-6-3" />
+		</>
+	),
+	pin: (
+		<>
+			<path d="M12 21s-6.5-5.6-6.5-10.5a6.5 6.5 0 0 1 13 0C18.5 15.4 12 21 12 21Z" />
+			<circle cx="12" cy="10.5" r="2.2" />
+		</>
+	),
+	phone: <path d="M6 3.5h2.8l1.7 4.4-2 1.3a11 11 0 0 0 6.3 6.3l1.3-2 4.4 1.7v2.8a2 2 0 0 1-2.2 2A16 16 0 0 1 4 5.7a2 2 0 0 1 2-2.2Z" />,
+	search: (
+		<>
+			<circle cx="11" cy="11" r="6.5" />
+			<path d="m20 20-4.4-4.4" />
+		</>
+	),
+	arrow: <path d="M4.5 12h15M13.5 6l6 6-6 6" />,
+	user: (
+		<>
+			<circle cx="12" cy="8" r="3.5" />
+			<path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5" />
+		</>
+	),
+	users: (
+		<>
+			<circle cx="9" cy="8.5" r="3" />
+			<path d="M3.5 19.5c.6-3 2.8-4.7 5.5-4.7s4.9 1.7 5.5 4.7" />
+			<path d="M15.5 5.8a3 3 0 0 1 0 5.4M17 14.9c1.9.6 3.1 2.2 3.5 4.6" />
+		</>
+	),
+	check: <path d="m5 12.5 4.5 4.5L19 7.5" />,
+	globe: (
+		<>
+			<circle cx="12" cy="12" r="8.5" />
+			<path d="M3.5 12h17M12 3.5c2.3 2.4 3.5 5.2 3.5 8.5s-1.2 6.1-3.5 8.5c-2.3-2.4-3.5-5.2-3.5-8.5s1.2-6.1 3.5-8.5Z" />
+		</>
+	),
 };
 
+function isIconName(name: string): name is DepartmentIconName {
+	return name in PATHS;
+}
+
 interface DepartmentIconProps {
-	name: DepartmentIconName;
+	/** Any siteConfig `icon:` string; unknown names fall back to the stethoscope. */
+	name: DepartmentIconName | (string & {});
 	className?: string;
 }
 
@@ -80,7 +170,7 @@ export function DepartmentIcon({ name, className }: DepartmentIconProps) {
 			strokeLinejoin="round"
 			aria-hidden="true"
 		>
-			{PATHS[name]}
+			{PATHS[isIconName(name) ? name : 'stethoscope']}
 		</svg>
 	);
 }

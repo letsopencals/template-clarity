@@ -3,6 +3,8 @@ import { AppointmentService } from '@opencals/storefront-sdk';
 import { requireAuth } from '@/lib/api-auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { handleApiError } from '@/lib/api-error-handler';
+import { publicPayload } from '@/lib/public-payload';
+import { withoutSecrets } from '@/app/api/account/_lib/care';
 
 export async function PUT(
 	_request: NextRequest,
@@ -16,9 +18,9 @@ export async function PUT(
 		const { data } = await AppointmentService.cancel({
 			path: { appointmentId },
 			body: { notifyCustomer: true },
-			headers: auth.headers,
+			headers: auth.headers, throwOnError: true,
 		});
-		return NextResponse.json(data);
+		return NextResponse.json(withoutSecrets(publicPayload(data)));
 	} catch (err) {
 		return handleApiError(err);
 	}

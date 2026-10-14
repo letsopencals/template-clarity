@@ -6,7 +6,7 @@ A production-ready booking website for medical clinics. Built with **Next.js 15*
 
 ![ClearCare Medical — the storefront and booking flow, on desktop and mobile](docs/cover.png)
 
-Warm, organic clinic palette (pastel wood, brass, and sage on soft ivory with a dusty medical blue), department-first booking, and a full storefront — services, appointments, checkout, customer accounts — wired up out of the box. MIT licensed: clone it, rebrand it, ship it.
+A calm, unhurried design ("Warm Practice"), a Care Finder that starts from what's going on rather than a department, a single-page booking composer with pre-visit notes, and a family care record ("My Care") for every patient. Services, clinicians, clinics, availability, checkout and accounts are all wired to Opencals out of the box. MIT licensed: clone it, rebrand it, ship it.
 
 ---
 
@@ -38,11 +38,11 @@ That's it. Once deployed, you'll have the same fully functional booking site as 
 
 ## The Storefront
 
-A calm, editorial homepage, department-first browsing, and a multi-location "clinics" section — all driven by your Opencals data.
+Clear Care is designed around how patients actually arrive: with a worry, not a department name. The homepage opens with "How can we help today?", the Care Finder suggests the right visit, and the rest of the site (rooms of care, clinicians, video visits, three clinics) is there for anyone who wants to browse first. Everything you see is driven by your Opencals data.
 
-![Homepage hero — editorial, warm, and organic](docs/homepage-hero.png)
+![Homepage hero](docs/homepage-hero.png)
 
-![Why ClearCare — trust markers and live stats](docs/why-clear-care.png)
+![Why Clear Care — trust markers](docs/why-clear-care.png)
 
 ![Departments — browse care by specialty](docs/departments.png)
 
@@ -50,38 +50,59 @@ A calm, editorial homepage, department-first browsing, and a multi-location "cli
 
 ## What's Included
 
-### Department-First Booking
-Patients browse by specialty — General Medicine, Cardiology, Dermatology, Pediatrics, Physiotherapy, Dental, Nutrition, Mental Health, and Labs & Vaccinations — then pick a service and book. Each department is a product collection in your Opencals store.
+### Warm Practice design
+A boutique private practice in afternoon light: cream plaster, honey oak, dusty steel-blue, brass and sage, set in Fraunces, Figtree and Geist Mono. Three motifs carry the site: the care line (a hairline with one gentle pulse that settles flat once you've booked), window frames around every photograph, and clinic stationery (the appointment card, the visit pass and a brass CC seal). Lenis smooth scroll and framer-motion keep it calm, and reduced-motion preferences are respected everywhere. The full design contract is in [`DESIGN.md`](DESIGN.md).
 
-### Online Booking
-A single-page, card-stack booking flow inspired by native mobile apps: choose service → clinician → date → time → medical intake → confirm. Sticky bottom CTA on mobile, sticky summary rail on desktop.
+### Care Finder
+`/care` is a short guided conversation: who is the visit for, what's going on (in the patient's own words or from a set of needs), and in clinic or by video. It then recommends one to three visits with the next free times. It never diagnoses. The emergency notice appears on every booking surface.
 
-![The booking page — location, clinician, date, and live time slots](docs/booking-page.png)
+### Rooms of care, clinicians and video visits
+- **Departments** (`/departments`, `/departments/[slug]`): each specialty is a product collection in your store, presented as a room of care with what it treats, its visits, its clinicians and an FAQ.
+- **Clinicians** (`/clinicians`, `/clinicians/[slug]`): a directory and a profile for each clinician, with their bookable visits.
+- **Video visits** (`/video-visits`): which visits work by video, how it works, and a local camera and microphone check (nothing is recorded or uploaded). The old `/telehealth` URL redirects here.
+- **Visits & fees** (`/services`), **About** and **Contact** (clinic directory, opening hours and open-now status).
 
-### Medical Intake at Checkout
-Custom checkout questions capture the reason for visit, insurance provider, and whether the patient is new — surfaced as a dedicated step in the booking flow and saved to the appointment.
+### The booking composer
+`/booking/[slug]` is a single page that unfolds one section at a time:
 
-### Group Sessions & Live Capacity
-Group services (physiotherapy classes, nutrition workshops, group therapy) support multiple attendees. Available time slots show **"N left"** using live availability counts, and fill up when capacity is reached.
+1. **Who the visit is for:** Me, My child or Someone else.
+2. **How you'll be seen:** at one of the clinics, or by video.
+3. **Clinician:** a specific person, or "First available". If several clinicians are free at the time you pick, you choose a face before reserving.
+4. **Day and time:** a day ribbon and live slots.
+5. **Add-ons**, when the service has them.
+6. **Pre-visit notes:** the service's intake questions on lined paper, with the patient's name and date of birth asked only when the visit is for your child or someone else, and real photo uploads (presigned via `/api/uploads/presign`).
 
-### Multi-Location Support
-Global location selector, clinicians filtered by location, and per-location availability across all three clinics.
+A live appointment card fills in as you go and is stamped "Held for you" when you reserve. Answers travel with each visit, so a family cart keeps every patient's notes separate.
 
-### Checkout with Stripe
-Multi-step checkout with customer info, medical intake, and secure payment via Stripe Elements. Auto-login after checkout so the patient lands in their account with the new appointment.
+![The booking page](docs/booking-page.png)
 
-### Customer Accounts
-Passwordless sign-in by default: customers enter their email and receive a 6-digit login code (password sign-in stays available as a fallback). Once signed in they can view appointments, browse order history, manage their profile, and reschedule or cancel appointments.
+### Checkout and the visit pass
+- **Checkout** (`/checkout`) has two steps: contact details, then payment. Stripe Elements is themed to match the site, and stores that offer it can let patients pay at the clinic. A stack of visit cards, a promo code field and the cart hold (with Extend) sit alongside.
+- **Thank-you** shows a visit pass for each booking with what to bring, add to calendar (.ics and Google Calendar) and, for video visits, when the join link opens.
 
-One-time email links from Opencals (view/reschedule/cancel appointment, leave feedback, verify email, reset password) all resolve through the `/link/[token]` route, which signs the customer in and redirects them to the right place.
+### My Care
+The customer account (`/account`) is a care record rather than an order list:
+
+- the next visit with a prep checklist and a join-video window;
+- recalls that are due, each with a Book button;
+- the care team, and a family filter to see one person's visits;
+- a visits timeline, and a visit record with pre-visit notes and photos, invoices and "Rate your care";
+- reschedule and cancel, shown only when the store's policy allows it;
+- billing, and a profile with communication preferences (email, SMS, WhatsApp).
+
+### Sign-in
+Code login comes first: patients enter their email and receive a 6-digit code. Password sign-in stays available as a second option. One-time email links from Opencals (view, reschedule or cancel a visit, leave feedback, verify email, reset password) all resolve through `/link/[token]`, which signs the patient in and takes them to the right place.
 
 > **Set your Storefront Base URL.** For emailed links to point back to this app, set **Storefront Base URL** in your Opencals dashboard (Settings → API) to your deployed URL (e.g. `https://your-domain.com`). Opencals builds every customer link as `{storefrontBaseUrl}/link/{token}`.
 
-### Mobile-First Design
-Fully responsive. The booking page in particular is designed mobile-first — a card-stack flow that feels native on a phone and expands to a two-column layout on desktop.
+### Multi-location
+A clinic selector in the footer, clinicians filtered by clinic, and per-clinic availability across all three clinics. The online location powers video visits and is chosen per visit in the composer, not in the global selector.
 
-### SEO Ready
-Per-page metadata, Open Graph cards, `MedicalClinic` structured data, robots.txt, and sitemap.xml — configured out of the box.
+### SEO
+Per-page metadata, a generated Open Graph share image (`app/opengraph-image.tsx`), `MedicalClinic` structured data, robots.txt and sitemap.xml.
+
+### A note on the demo data
+The clinic-specific intake ("Visit for", "Patient name", "Patient DOB") and the photo-upload config come from the **Medical / Clear Care Medical** dataset. If your store was seeded before these questions existed, reseed it to get them. Without them the template still works and books every visit for "Myself".
 
 ---
 
@@ -91,12 +112,14 @@ Per-page metadata, Open Graph cards, `MedicalClinic` structured data, robots.txt
 |----------|-----------|
 | Framework | Next.js 15 (App Router) |
 | Styling | Tailwind CSS v4 |
-| Animations | Framer Motion |
+| Animations | Framer Motion, Lenis smooth scroll |
+| Type | Fraunces, Figtree, Geist Mono (`next/font`) |
+| Data | React Server Components + SWR |
 | Forms | react-hook-form + Zod |
 | Payments | Stripe Elements |
 | Auth | NextAuth.js v5 |
 | Dates | moment-timezone |
-| API | Opencals Storefront SDK (v0.3.8) |
+| API | Opencals Storefront SDK (^0.3.17) |
 
 ---
 
@@ -128,43 +151,56 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ### Branding & Content
 
-All clinic-specific copy is centralized in **`lib/site-config.ts`**:
+Clinic copy and clinic knowledge live in **`lib/site-config.ts`**. Everything live (services, prices, durations, clinicians, clinics, opening hours, availability) comes from the Opencals API. The config only adds what a booking API can't know, and every entry is optional, so a department, service or clinician without one still renders from the API:
 
-- Clinic name, tagline, logo wordmark
-- Homepage hero text, stats, story cards, testimonials
-- About page story, clinicians, values
-- Contact information (address, phone, email, hours)
-- Footer links and social media
+- name, tagline, logo wordmark and the emergency line;
+- contact details, nurse line and opening hours;
+- homepage hero, journey, testimonials, trust markers, FAQ and closing call-to-action;
+- the Care Finder: needs in the patient's words, keywords and recommended service slugs;
+- per-department content (tagline, intro, what it treats, FAQs);
+- prep ("what to bring") per department and for video visits, and recall intervals for My Care;
+- clinician bios, titles, languages and focus, and the featured clinicians on the homepage;
+- video-visit copy and which services can be booked by video;
+- about page and footer.
 
-Edit this single file to rebrand the entire template.
+Set `siteConfig.url` to your deployed URL. It feeds `metadataBase`, the structured data, robots.txt and the sitemap.
+
+### Pre-visit notes
+
+Intake questions are your store's checkout questions. **`lib/intake.ts`** maps their stable `internalName` (for example `Visit for`, `Patient name`, `Patient DOB`, `Dermatology photo`, `Telehealth consent`) to what they mean for a clinic. Questions it doesn't know render generically by type, and nothing is required: a store without the clinic questions books every visit for "Myself".
 
 ### Theme Colors
 
-Design tokens live in **`app/globals.css`** as Tailwind v4 `@theme` properties. Token names are
-intentionally stable, so components keep working when you change the values:
+Design tokens live in **`app/globals.css`** as Tailwind v4 `@theme` properties, and fonts are loaded with `next/font` in `app/layout.tsx`. A short excerpt:
 
 ```css
 @theme {
-  --color-bg: #F7FAFC;        /* page background */
-  --color-surface: #FFFFFF;   /* cards / panels */
-  --color-cream: #12303F;     /* primary ink (dark on light) */
-  --color-copper: #005B8E;    /* medical-blue accent (also --color-gold) */
-  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-body: 'Inter', system-ui, sans-serif;
+  --color-paper: #fbf8f2;     /* page background */
+  --color-card: #fffdf9;      /* cards, fields, stationery */
+  --color-cream: #f3ebdd;     /* alternating sections */
+  --color-ink: #21303a;       /* text (navy-ink) */
+  --color-steel: #3f6e8c;     /* the only action colour: buttons, links, focus */
+  --color-oak: #b9844f;       /* warm tone: eyebrows, highlights */
+  --color-brass: #b08d57;     /* hairlines, the seal, stamps */
+  --color-sage: #8a9e7e;      /* available, done, open now */
+  --color-clay: #b4583f;      /* errors and the emergency notice */
+  --font-display: var(--font-fraunces), 'Fraunces', Georgia, serif;
+  --font-body: var(--font-figtree), 'Figtree', system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 ```
 
-Tip: keep the accent aligned with your store's storefront primary color so the deployed site matches your Opencals settings.
+Steel is the single action colour; oak, honey and brass are never used on buttons. [`DESIGN.md`](DESIGN.md) describes every token, the motifs, motion rules and voice, and [`CLAUDE.md`](CLAUDE.md) covers the code conventions.
 
 ### Imagery
 
-Drop hero, gallery, clinician, and location images into `public/images/{hero,gallery,team,locations,services}/`. See **`public/images/PLACEHOLDERS.md`** for filenames and recommended dimensions. Service and clinician photos in the live booking flow come from your Opencals store, not this folder.
+Hero, department, clinician, clinic, about, video-visit and trust images live in `public/images/{hero,departments,team,locations,about,telehealth,trust,gallery}/` and are referenced from `lib/site-config.ts`. Service and clinician photos in the live booking flow come from your Opencals store, not this folder.
 
 ### Adding Pages
 
-1. Create `app/your-page/page.tsx`
-2. Add a `layout.tsx` with metadata
-3. Add the link to `navLinks` in `components/layout/header.tsx`
+1. Create `app/your-page/page.tsx` (an async Server Component that reads data through `lib/server-data.ts`)
+2. Add a `layout.tsx` with metadata, or export `metadata` from the page
+3. Add the link to `NAV_LINKS` in `components/layout/nav-links.ts`
 
 ---
 
@@ -172,28 +208,33 @@ Drop hero, gallery, clinician, and location images into `public/images/{hero,gal
 
 ```
 app/
-  page.tsx                     # Homepage
-  departments/page.tsx         # Department (specialty) overview
-  departments/[slug]/page.tsx  # Services within a department
-  services/page.tsx            # Flat list of every service
-  booking/[slug]/page.tsx      # Card-stack booking page
-  thank-you/page.tsx           # Post-checkout confirmation
-  about/                       # About page
-  contact/                     # Contact form + info
-  account/                     # Customer dashboard
-  auth/                        # Sign in, sign up, password reset
-  api/                         # API routes proxy SDK calls server-side
+  page.tsx                       # Homepage
+  care/                          # Care Finder
+  departments/, departments/[slug]/  # Rooms of care
+  clinicians/, clinicians/[slug]/    # Clinician directory and profiles
+  video-visits/                  # Video visits + device check (/telehealth redirects here)
+  services/                      # Visits & fees
+  booking/[slug]/                # Booking composer
+  checkout/                      # Two-step checkout
+  thank-you/                     # Visit pass
+  account/                       # My Care: overview, visits, billing, settings
+  auth/                          # Sign in (code first), sign up, password reset, verify email
+  link/[token]/                  # One-time email links
+  opengraph-image.tsx            # Generated share image
+  api/                           # Route handlers that call the SDK server-side
 
 components/
-  layout/{header,footer}.tsx   # Site chrome
-  home/                        # Hero, departments, services, locations, clinicians, gallery, testimonials
-  booking/                     # Date picker, time slots, clinician/location selectors, summary
-  checkout/                    # Multi-step form components
-  cart/cart-drawer.tsx
+  home/ care/ departments/ clinicians/ video/ services/ about/ contact/   # Discovery
+  booking/                       # Composer sections, appointment card, thank-you/visit pass
+  checkout/ cart/                # Checkout steps, Stripe, visit card stack, promo code, hold bar
+  account/ auth/                 # My Care and sign-in
+  motifs/                        # Care line, window frame, CC seal
+  motion/                        # Reveal, parallax, count-up, smooth scroll, reduced motion
+  layout/ ui/                    # Header, footer, nav; buttons, inputs, sheet, dialog
 
-contexts/                      # cart, location, timezone, settings
-hooks/                         # use-api-request, use-form-submit, use-booking-flow, use-date-formatter
-lib/                           # site-config, opencals (SDK), auth (NextAuth), schemas, format, utils
+contexts/                        # cart, checkout, location, settings, timezone
+hooks/                           # booking flow, availability, add-ons, uploads, cart expiry, payment providers
+lib/                             # site-config, intake, catalog, server-data, public-payload, calendar, auth, opencals (SDK)
 ```
 
 ## Environment Variables
@@ -202,9 +243,10 @@ lib/                           # site-config, opencals (SDK), auth (NextAuth), s
 |----------|----------|-------------|
 | `OPENCALS_API_KEY` | Yes | Storefront API key from your Opencals dashboard |
 | `AUTH_SECRET` | Yes | Random string for NextAuth session encryption |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | No | Stripe publishable key for payment processing |
-| `OPENCALS_API_URL` | No | Override API base URL (defaults to production) |
-| `NEXT_PUBLIC_BASE_URL` | No | Public site URL (for sitemap) |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | No | Fallback Stripe publishable key (the key returned by the Opencals API for your store is used first) |
+| `OPENCALS_API_URL` | No | Override API base URL (defaults to `https://api.opencals.com`) |
+
+The public site URL used for the sitemap, robots.txt and share images is `siteConfig.url` in `lib/site-config.ts`, not an environment variable.
 
 ---
 

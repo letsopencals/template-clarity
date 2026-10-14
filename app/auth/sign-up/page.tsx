@@ -1,136 +1,21 @@
-'use client';
+import { Suspense } from 'react';
+import type { Metadata } from 'next';
+import { AuthShell } from '@/components/auth/auth-shell';
+import { AuthSkeleton } from '@/components/auth/auth-feedback';
+import { SignUpForm } from '@/components/auth/sign-up-form';
 
-import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { signUpSchema, type SignUpFormValues } from '@/lib/schemas';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useFormSubmit } from '@/hooks/use-form-submit';
-import { siteConfig } from '@/lib/site-config';
+export const metadata: Metadata = { title: 'Create your account' };
 
-export default function SignUpPage() {
-	const router = useRouter();
-
-	const form = useForm<SignUpFormValues>({
-		resolver: zodResolver(signUpSchema),
-		defaultValues: { email: '', password: '', firstName: '', lastName: '' },
-	});
-
-	const { submit, isSubmitting, error } = useFormSubmit(form, { url: '/api/auth/sign-up' });
-
-	const onSubmit = async (data: SignUpFormValues) => {
-		const result = await submit({
-			email: data.email,
-			password: data.password,
-			first_name: data.firstName,
-			last_name: data.lastName || undefined,
-		});
-
-		if (result !== null) {
-			router.push(`/auth/verify-email?email=${encodeURIComponent(data.email)}`);
-		}
-	};
-
+export default function Page() {
 	return (
-		<section className="flex min-h-screen items-center justify-center bg-[var(--color-bg)] px-6 pt-20 pb-20">
-			<motion.div
-				initial={{ opacity: 0, y: 20 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.5 }}
-				className="w-full max-w-[440px]"
-			>
-				<div className="text-center">
-					<Link href="/" className="font-display text-2xl font-bold tracking-tight text-[var(--color-ink)]">
-						{siteConfig.logo.text}<span className="text-[var(--color-primary)]">{siteConfig.logo.accent}</span>
-					</Link>
-					<h1 className="mt-6 font-display text-3xl font-semibold text-[var(--color-ink)]">Create Account</h1>
-					<p className="mt-2 text-sm text-[var(--color-ink-muted)]">Sign up to book appointments and manage your visits</p>
-				</div>
-
-				{error && (
-					<div className="mt-6 border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-						{error}
-					</div>
-				)}
-
-				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="mt-8 space-y-4">
-						<div className="grid gap-4 sm:grid-cols-2">
-							<FormField
-								control={form.control}
-								name="firstName"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel className="mb-0 text-xs font-medium normal-case tracking-normal text-[var(--color-ink-muted)]">First Name</FormLabel>
-										<FormControl>
-											<Input {...field} type="text" placeholder="Jane" />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="lastName"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel className="mb-0 text-xs font-medium normal-case tracking-normal text-[var(--color-ink-muted)]">Last Name</FormLabel>
-										<FormControl>
-											<Input {...field} type="text" placeholder="Smith" />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						</div>
-						<FormField
-							control={form.control}
-							name="email"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel className="mb-0 text-xs font-medium normal-case tracking-normal text-[var(--color-ink-muted)]">
-										Email <span className="text-[var(--color-primary)]">*</span>
-									</FormLabel>
-									<FormControl>
-										<Input {...field} type="email" placeholder="your@email.com" />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name="password"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel className="mb-0 text-xs font-medium normal-case tracking-normal text-[var(--color-ink-muted)]">
-										Password <span className="text-[var(--color-primary)]">*</span>
-									</FormLabel>
-									<FormControl>
-										<Input {...field} type="password" placeholder="Min. 8 characters" />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-
-						<Button type="submit" variant="primary" size="lg" fullWidth disabled={isSubmitting}>
-							{isSubmitting ? 'Creating account...' : 'Create Account'}
-						</Button>
-					</form>
-				</Form>
-
-				<p className="mt-8 text-center text-sm text-[var(--color-ink-muted)]">
-					Already have an account?{' '}
-					<Link href="/auth/sign-in" className="font-medium text-[var(--color-ink)] hover:text-[var(--color-primary)]">
-						Sign in
-					</Link>
-				</p>
-			</motion.div>
-		</section>
+		<Suspense
+			fallback={
+				<AuthShell title="Create your account">
+					<AuthSkeleton />
+				</AuthShell>
+			}
+		>
+			<SignUpForm />
+		</Suspense>
 	);
 }
