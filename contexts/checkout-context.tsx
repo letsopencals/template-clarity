@@ -343,11 +343,15 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 			setSelectedProvider(providerName);
 
 			try {
-				const startPayload: Record<string, unknown> = { provider: providerName };
-				if (customerId) {
-					// Re-send the contact fields: start re-validates the store's requirements.
-					startPayload.customer = { kind: 'existing', customerId, ...contactFields() };
-				}
+				// Re-send the contact fields: start re-validates the store's requirements. Without a
+				// trusted id (an email already on file) they go by email, so billing / consent still
+				// reach the booking.
+				const startPayload: Record<string, unknown> = {
+					provider: providerName,
+					customer: customerId
+						? { kind: 'existing', customerId, ...contactFields() }
+						: { kind: 'new', email: email.trim(), ...contactFields() },
+				};
 
 				const res = await fetch('/api/checkout/start', {
 					method: 'POST',
@@ -378,7 +382,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 				setSubmitting(false);
 			}
 		},
-		[cartHeaders, customerId, contactFields, handleSubmitCheckout],
+		[cartHeaders, customerId, contactFields, email, handleSubmitCheckout],
 	);
 
 	const items = useMemo(() => (cart?.items ?? []) as CartItem[], [cart?.items]);
