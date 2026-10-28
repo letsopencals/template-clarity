@@ -6,7 +6,6 @@ import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-
 import { Button } from '@/components/ui/button';
 import { STRIPE_FORM_ID } from './form-ids';
 
-const envPublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
 
 // Warm Practice, light: paper field on card, ink text, steel action, Figtree,
 // 14px field radius — the Payment Element should read as part of the form.
@@ -65,7 +64,7 @@ const FONTS: StripeElementsOptions['fonts'] = [
 interface StripePaymentProps {
 	clientSecret: string;
 	stripeAccountId?: string | null;
-	/** Key returned by checkout start (matches the account's test/live mode); env is the fallback. */
+	/** Key returned by checkout start (matches the account's test/live mode). */
 	publishableKey?: string | null;
 	onSuccess: (paymentIntentId: string) => void;
 	onError: (message: string) => void;
@@ -86,7 +85,7 @@ export function StripePayment({
 	payLabel,
 	onProcessingChange,
 }: StripePaymentProps) {
-	const publishableKey = responseKey || envPublishableKey;
+	const publishableKey = responseKey;
 	const stripePromise = useMemo(() => {
 		if (!publishableKey) return null;
 		return loadStripe(publishableKey, { stripeAccount: stripeAccountId ?? undefined });
@@ -98,8 +97,7 @@ export function StripePayment({
 		return (
 			<div className="rounded-field border border-clay/30 bg-clay-soft p-5" role="alert">
 				<p className="text-sm text-clay">
-					Card payments aren&rsquo;t set up yet. Set{' '}
-					<code className="rounded bg-card px-1 py-0.5 text-xs">NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code> in your environment.
+					Card payments aren&rsquo;t set up for this store yet. Connect Stripe in the Opencals dashboard.
 				</p>
 			</div>
 		);

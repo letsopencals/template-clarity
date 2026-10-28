@@ -30,7 +30,6 @@ During deployment, Vercel will ask you to set environment variables:
 |----------|-------|
 | `OPENCALS_API_KEY` | Your private storefront key (starts with `spk_`) |
 | `AUTH_SECRET` | Any random string — used for session encryption |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | *(optional)* Stripe publishable key for payments |
 
 That's it. Once deployed, you'll have the same fully functional booking site as the [live demo](https://template-clarity.vercel.app).
 
@@ -257,7 +256,6 @@ lib/                             # site-config, intake, catalog, server-data, pu
 |----------|----------|-------------|
 | `OPENCALS_API_KEY` | Yes | Private storefront key (`spk_`) from your Opencals dashboard |
 | `AUTH_SECRET` | Yes | Random string for NextAuth session encryption |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | No | Fallback Stripe publishable key (the key returned by the Opencals API for your store is used first) |
 | `OPENCALS_API_URL` | No | Override API base URL (defaults to `https://api.opencals.com`) |
 
 The public site URL used for the sitemap, robots.txt and share images is `siteConfig.url` in `lib/site-config.ts`, not an environment variable.
