@@ -24,6 +24,7 @@ import { useCart } from '@/contexts/cart-context';
 import { useSettings } from '@/contexts/settings-context';
 import { usePaymentProviders } from '@/hooks/use-payment-providers';
 import { outcomeOf, saveCheckoutReceipt } from '@/lib/visit-outcome';
+import { fieldErrorsOf, phoneFormatError } from '@/lib/field-errors';
 
 /**
  * Clinic checkout is two steps — contact details, then payment. Intake
@@ -111,8 +112,40 @@ export function checkoutFieldsOf(cs: CheckoutSetting | null | undefined): Checko
 	};
 }
 
-/** Backend field paths (e.g. "billingAddress.city") → message. */
+/** Form field (`phone`, `billingAddress.city`, see `fieldKeyOf`) → message. */
 export type FieldErrors = Record<string, string>;
+
+/** Billing contact fields are copied from the contact inputs, so their errors show there. */
+const BILLING_FROM_CONTACT: Record<string, string> = {
+	'billingAddress.firstName': 'firstName',
+	'billingAddress.lastName': 'lastName',
+	'billingAddress.email': 'email',
+	'billingAddress.phone': 'phone',
+};
+
+/** The details-step inputs a field error can sit under, given the store's checkout settings. */
+function visibleFields(fields: CheckoutFields, billingOpen: boolean): Set<string> {
+	const keys = ['email', 'firstName', 'lastName'];
+	if (fields.phone !== 'hidden') keys.push('phone');
+	if (billingOpen) {
+		keys.push('billingAddress.addressLine1', 'billingAddress.city', 'billingAddress.postalCode', 'billingAddress.country');
+		if (fields.companyName !== 'hidden') keys.push('billingAddress.companyName');
+		if (fields.taxId !== 'hidden') keys.push('billingAddress.taxRegistrationId', 'billingAddress.companyVatNumber');
+	}
+	return new Set(keys);
+}
+
+/** Splits field errors into the ones a details input shows and whether any are left over for the banner. */
+function placeFieldErrors(errors: FieldErrors, visible: Set<string>): { placed: FieldErrors; unplaced: boolean } {
+	const placed: FieldErrors = {};
+	let unplaced = false;
+	for (const [key, message] of Object.entries(errors)) {
+		const target = BILLING_FROM_CONTACT[key] && visible.has(BILLING_FROM_CONTACT[key]) ? BILLING_FROM_CONTACT[key] : key;
+		if (visible.has(target)) placed[target] = placed[target] && placed[target] !== message ? `${placed[target]} ${message}` : message;
+		else unplaced = true;
+	}
+	return { placed, unplaced };
+}
 
 interface CheckoutContextValue {
 	step: CheckoutStep;
@@ -177,8 +210,11 @@ interface ApiFailure {
 
 async function readError(res: Response, fallback: string): Promise<ApiFailure> {
 	try {
-		const data = (await res.json()) as { error?: string; errors?: FieldErrors } & Pick<Partial<CheckoutErrorResponse>, 'code' | 'orderId'>;
-		return { message: data.error || fallback, fields: data.errors ?? {}, code: data.code, orderId: data.orderId };
+		const data = (await res.json()) as { error?: string; errors?: unknown; fieldErrors?: unknown } & Pick<
+			Partial<CheckoutErrorResponse>,
+			'code' | 'orderId'
+		>;
+		return { message: data.error || fallback, fields: fieldErrorsOf(data), code: data.code, orderId: data.orderId };
 	} catch {
 		return { message: fallback, fields: {} };
 	}
@@ -198,10 +234,10 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 	const [checkoutComplete, setCheckoutComplete] = useState(false);
 	const [holdLost, setHoldLost] = useState(false);
 
-	const [email, setEmail] = useState('');
-	const [firstName, setFirstName] = useState('');
-	const [lastName, setLastName] = useState('');
-	const [phone, setPhone] = useState('');
+	const [email, setEmailState] = useState('');
+	const [firstName, setFirstNameState] = useState('');
+	const [lastName, setLastNameState] = useState('');
+	const [phone, setPhoneState] = useState('');
 	const [billing, setBilling] = useState<BillingDraft>(EMPTY_BILLING);
 	const [billingOpenState, setBillingOpen] = useState(false);
 	const [consent, setConsentState] = useState<ConsentDraft>(EMPTY_CONSENT);
@@ -215,9 +251,9 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 	useEffect(() => {
 		if (session?.customer && !prefilled) {
 			if (session.customer.id) setCustomerId(session.customer.id);
-			if (session.customer.email) setEmail(session.customer.email);
-			if (session.customer.firstName) setFirstName(session.customer.firstName);
-			if (session.customer.lastName) setLastName(session.customer.lastName);
+			if (session.customer.email) setEmailState(session.customer.email);
+			if (session.customer.firstName) setFirstNameState(session.customer.firstName);
+			if (session.customer.lastName) setLastNameState(session.customer.lastName);
 			setPrefilled(true);
 		}
 	}, [session, prefilled]);
@@ -252,12 +288,60 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 		[clearCart, router],
 	);
 
-	const updateBilling = useCallback((patch: Partial<BillingDraft>) => setBilling((b) => ({ ...b, ...patch })), []);
+	/** Editing a field clears its error. */
+	const clearFieldErrors = useCallback((...keys: string[]) => {
+		setFieldErrors((prev) => {
+			if (!keys.some((k) => k in prev)) return prev;
+			const next = { ...prev };
+			for (const k of keys) delete next[k];
+			return next;
+		});
+	}, []);
+	const setEmail = useCallback((v: string) => {
+		setEmailState(v);
+		clearFieldErrors('email');
+	}, [clearFieldErrors]);
+	const setFirstName = useCallback((v: string) => {
+		setFirstNameState(v);
+		clearFieldErrors('firstName');
+	}, [clearFieldErrors]);
+	const setLastName = useCallback((v: string) => {
+		setLastNameState(v);
+		clearFieldErrors('lastName');
+	}, [clearFieldErrors]);
+	const setPhone = useCallback((v: string) => {
+		setPhoneState(v);
+		clearFieldErrors('phone');
+	}, [clearFieldErrors]);
+	const updateBilling = useCallback(
+		(patch: Partial<BillingDraft>) => {
+			setBilling((b) => ({ ...b, ...patch }));
+			const keys = Object.keys(patch).map((k) => `billingAddress.${k}`);
+			// The tax ID input also shows the older companyVatNumber error.
+			if ('taxRegistrationId' in patch) keys.push('billingAddress.companyVatNumber');
+			clearFieldErrors(...keys);
+		},
+		[clearFieldErrors],
+	);
 	const setConsent = useCallback(
 		(channel: ConsentChannel, value: boolean) => setConsentState((c) => ({ ...c, [channel]: value })),
 		[],
 	);
 	const billingOpen = fields.billingAddress === 'required' || (fields.billingAddress === 'optional' && billingOpenState);
+
+	/**
+	 * Puts a failed request's field errors under the details inputs and goes back to that step. Returns the banner
+	 * message: the generic one only when some error has no field to sit under.
+	 */
+	const showFieldErrors = useCallback(
+		(errors: FieldErrors, message: string): string | null => {
+			const { placed, unplaced } = placeFieldErrors(errors, visibleFields(fields, billingOpen));
+			setFieldErrors(placed);
+			if (Object.keys(placed).length > 0) setStep('customer');
+			return unplaced || Object.keys(placed).length === 0 ? message : null;
+		},
+		[fields, billingOpen],
+	);
 
 	const cartHeaders = useCallback(
 		(): Record<string, string> =>
@@ -304,6 +388,13 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 			e.preventDefault();
 			setError(null);
 			setFieldErrors({});
+
+			// The API wants international numbers; say so before the round trip. The API stays the judge.
+			const phoneError = fields.phone !== 'hidden' ? phoneFormatError(phone) : undefined;
+			if (phoneError) {
+				setFieldErrors({ phone: phoneError });
+				return;
+			}
 			setSubmitting(true);
 
 			try {
@@ -320,8 +411,8 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 
 				if (!res.ok) {
 					const { message, fields: errs } = await readError(res, 'We couldn’t save your details. Please check them and try again.');
-					setFieldErrors(errs);
-					throw new Error(message);
+					setError(showFieldErrors(errs, message));
+					return;
 				}
 
 				const saved = (await res.json().catch(() => ({}))) as SaveCustomerResponse;
@@ -334,7 +425,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 				setSubmitting(false);
 			}
 		},
-		[sessionCustomerId, contactFields, email, cartHeaders],
+		[sessionCustomerId, contactFields, email, cartHeaders, fields.phone, phone, showFieldErrors],
 	);
 
 	// Final — submit the order.
@@ -448,6 +539,12 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 					if (failure.code === 'CHECKOUT_IN_PROGRESS') {
 						throw new Error('We’re already confirming this visit. Give it a moment, then try again.');
 					}
+					if (Object.keys(failure.fields).length > 0) {
+						// Start re-validates the contact details: back to that step, each message under its field.
+						setError(showFieldErrors(failure.fields, failure.message));
+						setSubmitting(false);
+						return;
+					}
 					throw new Error(failure.message);
 				}
 
@@ -472,7 +569,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 				setSubmitting(false);
 			}
 		},
-		[cartHeaders, customerId, contactFields, email, providers, goToOrder, loseHold, handleSubmitCheckout],
+		[cartHeaders, customerId, contactFields, email, providers, goToOrder, loseHold, handleSubmitCheckout, showFieldErrors],
 	);
 
 	const items = useMemo(() => cart?.items ?? [], [cart?.items]);
@@ -533,6 +630,10 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 			consent,
 			sessionCustomerId,
 			customerId,
+			setEmail,
+			setFirstName,
+			setLastName,
+			setPhone,
 			updateBilling,
 			setConsent,
 			providers,

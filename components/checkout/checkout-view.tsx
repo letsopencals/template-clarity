@@ -126,7 +126,11 @@ function CheckoutBody() {
 		if (lenis) lenis.scrollTo(el, { offset: -110 });
 		else el.scrollIntoView({ block: 'start', behavior: 'smooth' });
 		const t = window.setTimeout(() => {
-			el.querySelector<HTMLElement>('[data-section-body] :is(input, select, textarea, button)')?.focus({ preventScroll: true });
+			// Sent back to fix a field: land on it rather than the first input.
+			const target =
+				el.querySelector<HTMLElement>('[data-section-body] [aria-invalid="true"]') ??
+				el.querySelector<HTMLElement>('[data-section-body] :is(input, select, textarea, button)');
+			target?.focus({ preventScroll: true });
 		}, 450);
 		return () => window.clearTimeout(t);
 	}, [step, lenis]);

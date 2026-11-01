@@ -39,9 +39,13 @@ export function SignUpForm() {
 			return;
 		}
 		for (const [k, msg] of Object.entries(result.fields)) {
-			if (k in DEFAULTS) form.setError(k as keyof SignUpFormValues, { message: msg });
+			if (k in DEFAULTS) form.setError(k as keyof SignUpFormValues, { message: msg }, { shouldFocus: true });
 		}
-		setError(result.status === 409 ? 'There’s already an account with this email. Try signing in with a code instead.' : result.message);
+		// Field messages sit under their fields; the banner is for the rest.
+		const unmapped = Object.keys(result.fields).filter((k) => !(k in DEFAULTS));
+		if (result.status === 409 || unmapped.length > 0 || Object.keys(result.fields).length === 0) {
+			setError(result.status === 409 ? 'There’s already an account with this email. Try signing in with a code instead.' : result.message);
+		}
 	};
 
 	return (

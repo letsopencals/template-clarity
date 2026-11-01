@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { clsx } from 'clsx';
 import { useCheckout, type BillingDraft, type ConsentChannel, type FieldErrors } from '@/contexts/checkout-context';
@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { describedBy, Field } from './field';
 import { DETAILS_FORM_ID } from './form-ids';
 import { countryOptions } from './countries';
+import { PHONE_HINT } from '@/lib/field-errors';
 
 const CONSENT_COPY: Record<ConsentChannel, { label: string; hint: string }> = {
 	email: { label: 'Email me health tips and clinic news', hint: 'A few times a year. Unsubscribe whenever you like.' },
@@ -55,8 +56,15 @@ export function CustomerStep() {
 	const lastError = errorFor(fieldErrors, 'lastName');
 	const phoneError = errorFor(fieldErrors, 'phone');
 
+	// A rejected field takes focus, so the patient lands on what needs fixing.
+	const formRef = useRef<HTMLFormElement>(null);
+	useEffect(() => {
+		if (Object.keys(fieldErrors).length === 0) return;
+		formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+	}, [fieldErrors]);
+
 	return (
-		<form id={DETAILS_FORM_ID} onSubmit={handleSaveCustomer} className="space-y-6">
+		<form ref={formRef} id={DETAILS_FORM_ID} onSubmit={handleSaveCustomer} className="space-y-6">
 			{signedIn ? (
 				<p className="rounded-field bg-sage-soft px-4 py-3 text-sm text-sage-deep">
 					Signed in. We&rsquo;ve filled in what we have on file, so check it&rsquo;s still right.
@@ -132,7 +140,7 @@ export function CustomerStep() {
 					label="Mobile"
 					required={fields.phone === 'required'}
 					optional={fields.phone === 'optional'}
-					hint="So the clinic can reach you if a time has to move."
+					hint={`${PHONE_HINT}, so the clinic can reach you if a time has to move.`}
 					error={phoneError}
 				>
 					<Input
@@ -143,7 +151,7 @@ export function CustomerStep() {
 						inputMode="tel"
 						value={phone}
 						onChange={(e) => setPhone(e.target.value)}
-						placeholder="+1 212 555 0148"
+						placeholder="+1 917 482 3051"
 						aria-invalid={phoneError ? true : undefined}
 						aria-describedby={describedBy('checkout-phone', true, phoneError)}
 					/>
@@ -210,6 +218,7 @@ function BillingFields({ billing, errors, onChange, fields }: BillingFieldsProps
 	const countries = useMemo(() => countryOptions(), []);
 	const required = fields.billingAddress === 'required';
 	const err = (k: string) => errorFor(errors, `billingAddress.${k}`);
+	const taxError = err('taxRegistrationId') ?? err('companyVatNumber');
 
 	return (
 		<fieldset className={clsx('space-y-5 rounded-field border border-line bg-cream/50 p-4 sm:p-5')}>
@@ -229,6 +238,7 @@ function BillingFields({ billing, errors, onChange, fields }: BillingFieldsProps
 						value={billing.companyName}
 						onChange={(e) => onChange({ companyName: e.target.value })}
 						aria-invalid={err('companyName') ? true : undefined}
+						aria-describedby={describedBy('billing-company', false, err('companyName'))}
 					/>
 				</Field>
 			) : null}
@@ -240,6 +250,7 @@ function BillingFields({ billing, errors, onChange, fields }: BillingFieldsProps
 					value={billing.addressLine1}
 					onChange={(e) => onChange({ addressLine1: e.target.value })}
 					aria-invalid={err('addressLine1') ? true : undefined}
+					aria-describedby={describedBy('billing-line1', false, err('addressLine1'))}
 				/>
 			</Field>
 			<Field htmlFor="billing-line2" label="Apartment, suite" optional>
@@ -259,6 +270,7 @@ function BillingFields({ billing, errors, onChange, fields }: BillingFieldsProps
 						value={billing.city}
 						onChange={(e) => onChange({ city: e.target.value })}
 						aria-invalid={err('city') ? true : undefined}
+						aria-describedby={describedBy('billing-city', false, err('city'))}
 					/>
 				</Field>
 				<Field htmlFor="billing-state" label="State / region" optional>
@@ -277,6 +289,7 @@ function BillingFields({ billing, errors, onChange, fields }: BillingFieldsProps
 						value={billing.postalCode}
 						onChange={(e) => onChange({ postalCode: e.target.value })}
 						aria-invalid={err('postalCode') ? true : undefined}
+						aria-describedby={describedBy('billing-postal', false, err('postalCode'))}
 					/>
 				</Field>
 				<Field htmlFor="billing-country" label="Country" required={required} error={err('country')}>
@@ -286,6 +299,8 @@ function BillingFields({ billing, errors, onChange, fields }: BillingFieldsProps
 						required={required}
 						value={billing.country}
 						onChange={(e) => onChange({ country: e.target.value })}
+						aria-invalid={err('country') ? true : undefined}
+						aria-describedby={describedBy('billing-country', false, err('country'))}
 						className="w-full rounded-field border border-line-strong bg-card px-4 py-3 text-[15px] text-ink outline-none transition-[border-color,box-shadow] focus:border-steel focus:shadow-[0_0_0_4px_rgba(63,110,140,0.12)]"
 					>
 						{countries.map((c) => (
@@ -302,13 +317,15 @@ function BillingFields({ billing, errors, onChange, fields }: BillingFieldsProps
 					label="Tax ID"
 					required={fields.taxId === 'required'}
 					optional={fields.taxId === 'optional'}
-					error={err('taxRegistrationId') ?? err('companyVatNumber')}
+					error={taxError}
 				>
 					<Input
 						id="billing-tax"
 						required={fields.taxId === 'required'}
 						value={billing.taxRegistrationId}
 						onChange={(e) => onChange({ taxRegistrationId: e.target.value })}
+						aria-invalid={taxError ? true : undefined}
+						aria-describedby={describedBy('billing-tax', false, taxError)}
 					/>
 				</Field>
 			) : null}
