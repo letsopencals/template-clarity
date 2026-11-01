@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import useSWR from 'swr';
 import moment from 'moment-timezone';
+import type { CurrentAvailabilitySlot } from '@opencals/storefront-sdk';
 import { Dialog } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { fetcher } from '@/lib/fetcher';
@@ -17,17 +18,6 @@ import { DayRibbon, ribbonDays } from '@/components/account/visit-record/day-rib
 import { SlotList, type SlotOption } from '@/components/account/visit-record/slot-list';
 import { serviceTitle } from '@/components/account/care-utils';
 import type { CareVisit } from '@/components/account/care-types';
-
-interface AvailabilitySlot {
-	fromDate: string;
-	fromTime: string;
-	toDate: string;
-	toTime: string;
-	staffMemberIds?: string[];
-	locationIds?: string[];
-	attendees?: number;
-	maxAttendees?: number;
-}
 
 const SWR_OPTIONS = { revalidateOnFocus: false, keepPreviousData: false } as const;
 const UTC_FMT = 'YYYY-MM-DD HH:mm:ss';
@@ -61,11 +51,11 @@ export function RescheduleDialog({ visit, open, onClose, onDone }: { visit: Care
 		return `/api/availability?${p.toString()}`;
 	}, [open, selectedDay, timezone, visit.product.id, visit.id, visit.clinician, visit.place]);
 
-	const { data, isLoading, error: loadError } = useSWR<AvailabilitySlot[]>(query, fetcher, SWR_OPTIONS);
+	const { data, isLoading, error: loadError } = useSWR<CurrentAvailabilitySlot[]>(query, fetcher, SWR_OPTIONS);
 
 	const currentKey = moment.utc(visit.from).format(UTC_FMT);
-	const options = useMemo<{ slots: SlotOption[]; raw: Map<string, AvailabilitySlot> }>(() => {
-		const raw = new Map<string, AvailabilitySlot>();
+	const options = useMemo<{ slots: SlotOption[]; raw: Map<string, CurrentAvailabilitySlot> }>(() => {
+		const raw = new Map<string, CurrentAvailabilitySlot>();
 		const slots: SlotOption[] = [];
 		for (const s of data ?? []) {
 			const full = s.maxAttendees != null && s.attendees != null && s.attendees >= s.maxAttendees;

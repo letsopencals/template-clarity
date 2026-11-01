@@ -1,5 +1,6 @@
 import { clsx } from 'clsx';
-import type { CareVisit, VisitStatus } from '@/components/account/care-types';
+import type { AppointmentStatusType } from '@opencals/storefront-sdk';
+import type { CareVisit } from '@/components/account/care-types';
 
 type Tone = 'steel' | 'honey' | 'sage' | 'clay' | 'dim';
 
@@ -17,7 +18,7 @@ type PendingReason = CareVisit['pendingReason'];
  * Human label + tone for a visit's state. A scheduled visit already behind us reads as "Past".
  * A `pending` visit only waits when it has a reason; without one it is being confirmed right now.
  */
-export function statusOf(status: VisitStatus, past: boolean, pendingReason: PendingReason = null): { label: string; tone: Tone } {
+export function statusOf(status: AppointmentStatusType, past: boolean, pendingReason: PendingReason = null): { label: string; tone: Tone } {
 	switch (status) {
 		case 'completed':
 			return { label: 'Seen', tone: 'sage' };
@@ -38,7 +39,7 @@ export function VisitStatusBadge({
 	pendingReason = null,
 	className,
 }: {
-	status: VisitStatus;
+	status: AppointmentStatusType;
 	past: boolean;
 	pendingReason?: PendingReason;
 	className?: string;

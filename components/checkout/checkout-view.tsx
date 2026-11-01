@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import Link from 'next/link';
+import type { CustomerProviderCatalogItem } from '@opencals/storefront-sdk';
 import { useCart } from '@/contexts/cart-context';
 import { useCheckout, type CheckoutStep } from '@/contexts/checkout-context';
 import { useSmoothScroll } from '@/components/motion/smooth-scroll';
@@ -108,7 +109,7 @@ function CheckoutBody() {
 		useCheckout();
 	const lenis = useSmoothScroll();
 
-	const [chosen, setChosen] = useState<string | undefined>();
+	const [chosen, setChosen] = useState<CustomerProviderCatalogItem['name'] | undefined>();
 	const method = chosen && providers.some((p) => p.name === chosen) ? chosen : providers[0]?.name;
 	const [stripeProcessing, setStripeProcessing] = useState(false);
 
@@ -230,8 +231,8 @@ interface ActionInput {
 	isExpired: boolean;
 	hasEmail: boolean;
 	hasProviders: boolean;
-	method: string | undefined;
-	selectedProvider: string | null;
+	method: CustomerProviderCatalogItem['name'] | undefined;
+	selectedProvider: CustomerProviderCatalogItem['name'] | null;
 	stripeProcessing: boolean;
 	total: string;
 	onConfirmOffline: () => void;

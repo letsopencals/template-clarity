@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSWRConfig } from 'swr';
 import type {
+	CheckoutQuestionAnswer,
 	CheckoutQuestionResponse,
 	CurrentAvailabilitySlot,
 	ProductListItemResponse,
@@ -42,14 +43,6 @@ export interface BookingDeepLink {
 /** Composer sections, in order. */
 export const SECTION = { who: 0, seen: 1, clinician: 2, time: 3, extras: 4, notes: 5 } as const;
 export type SectionIndex = (typeof SECTION)[keyof typeof SECTION];
-
-/** One answer as sent to `/api/book` (and stored on the appointment). */
-export interface BookAnswer {
-	questionId: string;
-	question: string;
-	answer: string;
-	fileIds?: string[];
-}
 
 export interface BookError {
 	message: string;
@@ -406,8 +399,8 @@ export function useBookingFlow({ slug, initialProduct, initialQuestions, initial
 
 	// ------------------------------------------------------------ Payload
 	const buildAnswers = useCallback(
-		(fresh: Record<string, string[]> | null): BookAnswer[] => {
-			const out: BookAnswer[] = [];
+		(fresh: Record<string, string[]> | null): CheckoutQuestionAnswer[] => {
+			const out: CheckoutQuestionAnswer[] = [];
 			if (visitForQuestion && visitFor) {
 				out.push({ questionId: visitForQuestion.id, question: questionTitle(visitForQuestion), answer: visitForOption(visitForQuestion, visitFor) });
 			}

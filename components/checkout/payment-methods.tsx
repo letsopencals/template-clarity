@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { PAYMENT_METHOD_FORM_ID } from './form-ids';
 
 /** Primary-action label for a chosen provider (used here and by the mobile pay bar). */
-export function methodActionLabel(name: string | undefined): string {
+export function methodActionLabel(name: CustomerProviderCatalogItem['name'] | undefined): string {
 	switch (name) {
 		case 'stripe':
 			return 'Continue to card';
@@ -26,8 +26,8 @@ export function methodActionLabel(name: string | undefined): string {
 }
 
 interface PaymentMethodsProps {
-	method: string | undefined;
-	onMethodChange: (name: string) => void;
+	method: CustomerProviderCatalogItem['name'] | undefined;
+	onMethodChange: (name: CustomerProviderCatalogItem['name']) => void;
 }
 
 /**
@@ -78,7 +78,7 @@ interface MethodCardProps {
 	index: number;
 	checked: boolean;
 	disabled: boolean;
-	onSelect: (name: string) => void;
+	onSelect: (name: CustomerProviderCatalogItem['name']) => void;
 }
 
 function MethodCard({ provider, index, checked, disabled, onSelect }: MethodCardProps) {

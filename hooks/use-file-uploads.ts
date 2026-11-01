@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { CheckoutQuestionResponse } from '@opencals/storefront-sdk';
+import type { CheckoutQuestionResponse, GenerateUploadUrlResponse } from '@opencals/storefront-sdk';
 import { uploadLimits } from '@/lib/intake';
 
 /*
@@ -93,12 +93,6 @@ export interface UploadItem {
 
 export type UploadsByQuestion = Record<string, UploadItem[]>;
 
-interface PresignResponse {
-	fileId: string;
-	presignedUrl: string;
-	expiresIn: number;
-}
-
 /** Patient-facing copy: keep the backend's type/size reasons, hide configuration errors. */
 function presignMessage(status: number, error: string | undefined): string {
 	if (status >= 500 || !error || /question/i.test(error)) {
@@ -163,7 +157,7 @@ export function useFileUploads() {
 					body: JSON.stringify({ questionId, filename: item.filename, mime: item.mime, size: item.size }),
 					signal: controller.signal,
 				});
-				const data = (await res.json().catch(() => null)) as (PresignResponse & { error?: string }) | null;
+				const data = (await res.json().catch(() => null)) as (GenerateUploadUrlResponse & { error?: string }) | null;
 				if (!res.ok || !data?.presignedUrl) throw new Error(presignMessage(res.status, data?.error));
 				await putWithProgress(data.presignedUrl, item.file, item.mime, (p) => patch(questionId, item.key, { progress: p }), controller.signal);
 				patch(questionId, item.key, { status: 'done', progress: 1, fileId: data.fileId, error: null });

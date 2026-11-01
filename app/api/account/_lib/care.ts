@@ -127,7 +127,7 @@ export function toCareVisit(detail: AppointmentDetailResponse, departments: Depa
 			variantTitle: p.variantTitle ?? null,
 			duration: p.duration,
 			price: p.price,
-			imageUrl: (p as { image?: { url?: string | null } | null }).image?.url ?? null,
+			imageUrl: p.image?.url ?? null,
 			allowCustomDuration: !!p.allowCustomDuration,
 			allowCustomerCancel: p.allowCustomerCancel !== false,
 			allowCustomerReschedule: p.allowCustomerReschedule !== false,

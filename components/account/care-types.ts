@@ -1,4 +1,12 @@
-import type { AppointmentDetailResponse, StorefrontAppointmentPendingReason } from '@opencals/storefront-sdk';
+import type {
+	AppointmentDetailOrder,
+	AppointmentStatusType,
+	CustomerProviderCatalogItem,
+	FeedbackQuestionResponse,
+	InvoiceResponse,
+	MarketingConsentState,
+	StorefrontAppointmentPendingReason,
+} from '@opencals/storefront-sdk';
 import type { Patient } from '@/lib/intake';
 
 /**
@@ -7,8 +15,6 @@ import type { Patient } from '@/lib/intake';
  * internal notes, no staff contact details, no customer credentials. Client-safe
  * (types only).
  */
-
-export type VisitStatus = 'pending' | 'scheduled' | 'completed' | 'canceled';
 
 export interface CareFile {
 	id: string;
@@ -90,17 +96,17 @@ export interface CareCharge {
 	refundedTotal: number;
 	balance: number;
 	/** The SDK's full union, including `voided` (cancelled before anything was paid). */
-	paymentStatus: NonNullable<AppointmentDetailResponse['order']>['paymentStatus'];
+	paymentStatus: AppointmentDetailOrder['paymentStatus'];
 	/** Pay-by deadline for manual payments (ISO), when the clinic sets one. */
 	paymentDueAt: string | null;
-	refundStatus: 'refund-owed' | 'partially-refunded' | 'fully-refunded' | 'unrefunded';
+	refundStatus: AppointmentDetailOrder['refundStatus'];
 	/** Payment methods used ("stripe", "cash"…). */
-	providers: string[];
+	providers: CustomerProviderCatalogItem['name'][];
 }
 
 export interface CareVisit {
 	id: string;
-	status: VisitStatus;
+	status: AppointmentStatusType;
 	/** Why a `pending` visit waits. Null when it doesn't (or is only briefly pending while being confirmed). */
 	pendingReason: StorefrontAppointmentPendingReason | null;
 	/** UTC ISO. */
@@ -131,8 +137,8 @@ export interface CareRecord {
 export interface CareInvoice {
 	id: string;
 	number: string;
-	kind: 'collectible' | 'receipt';
-	status: 'draft' | 'sent' | 'paid' | 'void' | 'failed';
+	kind: InvoiceResponse['kind'];
+	status: InvoiceResponse['status'];
 	amountDue: number;
 	currency: string;
 	issuedAt: string | null;
@@ -142,21 +148,17 @@ export interface CareInvoice {
 	url: string | null;
 }
 
-export type FeedbackQuestionType = 'single-line-text-field' | 'multi-line-text-field' | 'dropdown' | 'rating' | 'checkbox' | 'file-upload';
-
 export interface CareFeedbackQuestion {
 	id: string;
-	type: FeedbackQuestionType;
+	type: FeedbackQuestionResponse['type'];
 	required: boolean;
 	title: string;
 	description: string | null;
 	options: string[];
 }
 
-export type ConsentState = 'not_subscribed' | 'subscribed' | 'unsubscribed';
-
 export interface CareConsent {
-	email: ConsentState;
-	sms: ConsentState;
-	whatsapp: ConsentState;
+	email: MarketingConsentState;
+	sms: MarketingConsentState;
+	whatsapp: MarketingConsentState;
 }

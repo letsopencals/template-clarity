@@ -37,7 +37,7 @@ export interface VisitRow {
 	clinicNote: string | null;
 	directionsHref: string | null;
 	onlineLink: string | null;
-	status: string;
+	status: OrderDetailAppointment['status'];
 	/** Confirmed, or waiting for payment / the clinic's confirmation. */
 	outcome: VisitOutcome;
 	addOns: { id: string; title: string; quantity: number }[];

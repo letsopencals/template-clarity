@@ -1,4 +1,4 @@
-import type { OrderListItemResponse } from '@opencals/storefront-sdk';
+import type { CustomerProviderCatalogItem, OrderListItemResponse } from '@opencals/storefront-sdk';
 
 /** Statement money: zero shows as an amount, not "Free". */
 export function money(amount: number, currency: string): string {
@@ -31,7 +31,7 @@ export const TONE_CLASS: Record<PaymentTone, string> = {
 	void: 'bg-cream text-ink-muted',
 };
 
-export const PROVIDER_LABEL: Record<string, string> = {
+export const PROVIDER_LABEL: Record<CustomerProviderCatalogItem['name'], string> = {
 	stripe: 'Card',
 	cash: 'In clinic',
 	bank_transfer: 'Bank transfer',

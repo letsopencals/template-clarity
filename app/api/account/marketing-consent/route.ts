@@ -1,15 +1,15 @@
 import '@/lib/opencals';
-import { SelfService } from '@opencals/storefront-sdk';
+import { SelfService, type MarketingConsentResponse } from '@opencals/storefront-sdk';
 import { requireAuth } from '@/lib/api-auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { handleApiError } from '@/lib/api-error-handler';
 import type { CareConsent } from '@/components/account/care-types';
 
-function toConsent(data: { emailState?: string; smsState?: string; whatsappState?: string } | null | undefined): CareConsent {
+function toConsent(data: Partial<Pick<MarketingConsentResponse, 'emailState' | 'smsState' | 'whatsappState'>> | null | undefined): CareConsent {
 	return {
-		email: (data?.emailState as CareConsent['email']) ?? 'not_subscribed',
-		sms: (data?.smsState as CareConsent['sms']) ?? 'not_subscribed',
-		whatsapp: (data?.whatsappState as CareConsent['whatsapp']) ?? 'not_subscribed',
+		email: data?.emailState ?? 'not_subscribed',
+		sms: data?.smsState ?? 'not_subscribed',
+		whatsapp: data?.whatsappState ?? 'not_subscribed',
 	};
 }
 

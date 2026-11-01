@@ -1,19 +1,14 @@
 'use client';
 
 import useSWR from 'swr';
+import type { SelfServiceProfileResponse } from '@opencals/storefront-sdk';
 import { fetcher } from '@/lib/fetcher';
 
 export const PROFILE_KEY = '/api/account/profile';
 
-export interface CareProfile {
-	id: string;
-	firstName: string | null;
-	lastName: string | null;
-	email: string | null;
-	phone: string | null;
-	/** False for accounts that only ever signed in with an emailed code. */
-	isPasswordSet?: boolean;
-}
+/** The public subset `/api/account/profile` returns. `isPasswordSet` is false for code-only accounts. */
+export type CareProfile = Pick<SelfServiceProfileResponse, 'id' | 'firstName' | 'lastName' | 'email' | 'phone'> &
+	Partial<Pick<SelfServiceProfileResponse, 'isPasswordSet'>>;
 
 const SWR_OPTIONS = { revalidateOnFocus: false } as const;
 

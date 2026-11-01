@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import type { CustomerProviderCatalogItem } from '@opencals/storefront-sdk';
 import { useCheckout } from '@/contexts/checkout-context';
 import { Button } from '@/components/ui/button';
 
@@ -78,7 +79,7 @@ function StripeSkeleton() {
 	);
 }
 
-function offlineTitle(provider: string | null): string {
+function offlineTitle(provider: CustomerProviderCatalogItem['name'] | null): string {
 	switch (provider) {
 		case 'cash':
 			return 'Pay at the clinic';
@@ -91,7 +92,7 @@ function offlineTitle(provider: string | null): string {
 	}
 }
 
-function offlineCopy(provider: string | null): string {
+function offlineCopy(provider: CustomerProviderCatalogItem['name'] | null): string {
 	switch (provider) {
 		case 'cash':
 			return 'We’ll hold your time. Pay at reception on the day.';

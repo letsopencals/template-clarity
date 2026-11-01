@@ -1,4 +1,4 @@
-import type { PaymentInstructions, StorefrontAppointmentPendingReason } from '@opencals/storefront-sdk';
+import type { CheckoutOrderAppointment, PaymentInstructions, StorefrontAppointmentPendingReason } from '@opencals/storefront-sdk';
 
 /**
  * Where a booking stands after checkout. A visit only waits when it is
@@ -6,9 +6,10 @@ import type { PaymentInstructions, StorefrontAppointmentPendingReason } from '@o
  * visit is briefly `pending` with no reason while a background job confirms
  * it, and that reads as confirmed.
  */
-export type VisitOutcome = 'confirmed' | 'awaiting_payment' | 'awaiting_approval';
+export type VisitOutcome = 'confirmed' | StorefrontAppointmentPendingReason;
 
-type OutcomeInput = { status?: string | null; pendingReason?: StorefrontAppointmentPendingReason | null } | null | undefined;
+/** Any order read's appointment (checkout submit, order detail): only the state matters. */
+type OutcomeInput = Partial<Pick<CheckoutOrderAppointment, 'status' | 'pendingReason'>> | null | undefined;
 
 export function outcomeOf(appointments: OutcomeInput[]): VisitOutcome {
 	const waiting = appointments.filter((a) => a?.status === 'pending' && a.pendingReason).map((a) => a!.pendingReason);

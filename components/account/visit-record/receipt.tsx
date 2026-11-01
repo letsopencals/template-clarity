@@ -5,6 +5,7 @@ import { formatPrice } from '@/lib/format';
 import { InvoiceList } from '@/components/account/invoice-list';
 import { usePersonFilter } from '@/components/account/use-care';
 import { serviceTitle } from '@/components/account/care-utils';
+import type { CustomerProviderCatalogItem } from '@opencals/storefront-sdk';
 import type { CareVisit } from '@/components/account/care-types';
 
 const PAYMENT_LABEL: Record<NonNullable<CareVisit['charge']>['paymentStatus'], string> = {
@@ -14,7 +15,7 @@ const PAYMENT_LABEL: Record<NonNullable<CareVisit['charge']>['paymentStatus'], s
 	voided: 'Cancelled — not charged',
 };
 
-const PROVIDER_LABEL: Record<string, string> = {
+const PROVIDER_LABEL: Record<CustomerProviderCatalogItem['name'], string> = {
 	stripe: 'card',
 	cash: 'in clinic',
 	bank_transfer: 'bank transfer',

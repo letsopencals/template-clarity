@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import useSWR from 'swr';
-import type { OrderDetailLineItem, OrderDetailResponse } from '@opencals/storefront-sdk';
+import type { OrderDetailLineItem, OrderDetailResponse, OrderDetailTransaction } from '@opencals/storefront-sdk';
 import { fetcher } from '@/lib/fetcher';
 import { useHydrated } from '@/hooks/use-hydrated';
 import { useDateFormatter } from '@/hooks/use-date-formatter';
@@ -13,7 +13,7 @@ import { money, PROVIDER_LABEL, statementStatus, TONE_CLASS } from '@/components
 
 const SWR_OPTIONS = { revalidateOnFocus: false } as const;
 
-const TX_LABEL: Record<string, string> = {
+const TX_LABEL: Record<OrderDetailTransaction['type'], string> = {
 	sale: 'Payment',
 	capture: 'Payment',
 	authorization: 'Card held',

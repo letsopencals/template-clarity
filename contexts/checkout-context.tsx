@@ -6,11 +6,16 @@ import { signIn as nextAuthSignIn, useSession } from 'next-auth/react';
 import type {
 	BillingAddress,
 	CartItem,
+	CheckoutFieldRequirement,
 	CheckoutSetting,
 	CheckoutResponse,
 	CheckoutStartResponse,
 	CustomerProviderCatalogItem,
+	ExistingOrderCustomer,
 	MarketingConsentInput,
+	NewOrderCustomer,
+	SaveCustomerResponse,
+	StartCheckout,
 	SubmitCheckout,
 } from '@opencals/storefront-sdk';
 import { useCart } from '@/contexts/cart-context';
@@ -25,16 +30,16 @@ import { outcomeOf, saveCheckoutReceipt } from '@/lib/visit-outcome';
  */
 export type CheckoutStep = 'customer' | 'payment-select' | 'payment';
 
-export type FieldRequirement = 'hidden' | 'optional' | 'required';
-export type ConsentChannel = 'email' | 'sms' | 'whatsapp';
+export type ConsentChannel = keyof MarketingConsentInput;
+type ProviderName = CustomerProviderCatalogItem['name'];
 
 /** What the store asks for at checkout, with safe defaults when settings are missing. */
 export interface CheckoutFields {
 	firstNameRequired: boolean;
-	phone: FieldRequirement;
-	billingAddress: FieldRequirement;
-	companyName: FieldRequirement;
-	taxId: FieldRequirement;
+	phone: CheckoutFieldRequirement;
+	billingAddress: CheckoutFieldRequirement;
+	companyName: CheckoutFieldRequirement;
+	taxId: CheckoutFieldRequirement;
 	/** Marketing channels offered at checkout, in display order. */
 	consentChannels: ConsentChannel[];
 }
@@ -71,7 +76,7 @@ type CheckoutMode = CustomerProviderCatalogItem['checkoutMode'];
  * How the provider checkout actually started with is paid. The backend can swap the requested provider for
  * "no payment required" when nothing is collectible, so look up the RESPONSE provider first.
  */
-function modeOf(started: string, requested: string, providers: CustomerProviderCatalogItem[]): CheckoutMode | undefined {
+function modeOf(started: ProviderName, requested: ProviderName, providers: CustomerProviderCatalogItem[]): CheckoutMode | undefined {
 	if (started === 'no_payment_required') return 'none';
 	return (providers.find((p) => p.name === started) ?? providers.find((p) => p.name === requested))?.checkoutMode;
 }
@@ -81,7 +86,7 @@ const IN_PROGRESS_RETRIES = 3;
 const IN_PROGRESS_DELAY_MS = 1500;
 const wait = (ms: number) => new Promise<void>((resolve) => window.setTimeout(resolve, ms));
 
-function requirement(value: string | null | undefined): FieldRequirement {
+function requirement(value: string | null | undefined): CheckoutFieldRequirement {
 	return value === 'required' || value === 'optional' ? value : 'hidden';
 }
 
@@ -137,7 +142,7 @@ interface CheckoutContextValue {
 	setConsent: (channel: ConsentChannel, value: boolean) => void;
 
 	providers: CustomerProviderCatalogItem[];
-	selectedProvider: string | null;
+	selectedProvider: ProviderName | null;
 	paymentData: CheckoutStartResponse | null;
 
 	items: CartItem[];
@@ -147,7 +152,7 @@ interface CheckoutContextValue {
 	setStep: (step: CheckoutStep) => void;
 	setError: (error: string | null) => void;
 	handleSaveCustomer: (e: React.FormEvent) => Promise<void>;
-	handleStartCheckout: (providerName: string) => Promise<void>;
+	handleStartCheckout: (providerName: ProviderName) => Promise<void>;
 	handleSubmitCheckout: (stripePaymentIntentId?: string) => Promise<void>;
 	extendCart: () => Promise<void>;
 }
@@ -216,7 +221,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 	}, [session, prefilled]);
 
 	const providers = usePaymentProviders(cartId);
-	const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
+	const [selectedProvider, setSelectedProvider] = useState<ProviderName | null>(null);
 	const [paymentData, setPaymentData] = useState<CheckoutStartResponse | null>(null);
 
 	// No cart at all → back to Find care. Only once CartProvider has read the
@@ -301,7 +306,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 
 			try {
 				// A signed-in patient checks out as themselves; everyone else by email.
-				const customer = sessionCustomerId
+				const customer: ExistingOrderCustomer | NewOrderCustomer = sessionCustomerId
 					? { kind: 'existing', customerId: sessionCustomerId, ...contactFields() }
 					: { kind: 'new', email: email.trim(), ...contactFields() };
 
@@ -317,7 +322,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 					throw new Error(message);
 				}
 
-				const saved = (await res.json().catch(() => ({}))) as { customerId?: string };
+				const saved = (await res.json().catch(() => ({}))) as SaveCustomerResponse;
 				// Only trusted ids come back; an email already on file stays attached to the cart server-side.
 				setCustomerId(saved.customerId ?? sessionCustomerId);
 				setStep('payment-select');
@@ -404,7 +409,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 
 	// 02 — Start checkout with the chosen method.
 	const handleStartCheckout = useCallback(
-		async (providerName: string) => {
+		async (providerName: ProviderName) => {
 			setError(null);
 			setSubmitting(true);
 			setSelectedProvider(providerName);
@@ -413,7 +418,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 				// Re-send the contact fields: start re-validates the store's requirements. Without a
 				// trusted id (an email already on file) they go by email, so billing / consent still
 				// reach the booking.
-				const startPayload: Record<string, unknown> = {
+				const startPayload: StartCheckout = {
 					provider: providerName,
 					customer: customerId
 						? { kind: 'existing', customerId, ...contactFields() }
@@ -468,7 +473,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 		[cartHeaders, customerId, contactFields, email, providers, goToOrder, loseHold, handleSubmitCheckout],
 	);
 
-	const items = useMemo(() => (cart?.items ?? []) as CartItem[], [cart?.items]);
+	const items = useMemo(() => cart?.items ?? [], [cart?.items]);
 	const isExpired = timeRemaining !== null && timeRemaining <= 0;
 
 	const value = useMemo<CheckoutContextValue>(
