@@ -9,11 +9,13 @@ import type {
 	CheckoutFieldRequirement,
 	CheckoutSetting,
 	CheckoutResponse,
+	CheckoutErrorResponse,
 	CheckoutStartResponse,
 	CustomerProviderCatalogItem,
 	ExistingOrderCustomer,
 	MarketingConsentInput,
 	NewOrderCustomer,
+	PaymentProviderName,
 	SaveCustomerResponse,
 	StartCheckout,
 	SubmitCheckout,
@@ -31,7 +33,7 @@ import { outcomeOf, saveCheckoutReceipt } from '@/lib/visit-outcome';
 export type CheckoutStep = 'customer' | 'payment-select' | 'payment';
 
 export type ConsentChannel = keyof MarketingConsentInput;
-type ProviderName = CustomerProviderCatalogItem['name'];
+type ProviderName = PaymentProviderName;
 
 /** What the store asks for at checkout, with safe defaults when settings are missing. */
 export interface CheckoutFields {
@@ -168,14 +170,14 @@ interface ApiFailure {
 	message: string;
 	fields: FieldErrors;
 	/** The API's machine-readable reason, e.g. CART_EXPIRED or PAYMENT_NOT_AUTHORIZED. */
-	code?: string;
+	code?: CheckoutErrorResponse['code'];
 	/** CART_ALREADY_CHECKED_OUT: the order this cart already became. */
-	orderId?: string;
+	orderId?: CheckoutErrorResponse['orderId'];
 }
 
 async function readError(res: Response, fallback: string): Promise<ApiFailure> {
 	try {
-		const data = (await res.json()) as { error?: string; errors?: FieldErrors; code?: string; orderId?: string };
+		const data = (await res.json()) as { error?: string; errors?: FieldErrors } & Pick<Partial<CheckoutErrorResponse>, 'code' | 'orderId'>;
 		return { message: data.error || fallback, fields: data.errors ?? {}, code: data.code, orderId: data.orderId };
 	} catch {
 		return { message: fallback, fields: {} };

@@ -1,6 +1,6 @@
 'use client';
 
-import type { PaymentInstructions } from '@opencals/storefront-sdk';
+import type { PaymentInstructions, PaymentProviderName } from '@opencals/storefront-sdk';
 import { useSettings } from '@/contexts/settings-context';
 import { buttonClasses } from '@/components/ui/button';
 import { safeInvoiceUrl } from '@/lib/visit-outcome';
@@ -37,7 +37,7 @@ function useDueLabel(iso: string | null | undefined): string | null {
 	}
 }
 
-const HEADING: Record<string, string> = {
+const HEADING: Partial<Record<PaymentProviderName, string>> = {
 	bank_transfer: 'Pay by bank transfer',
 	stripe_invoice: 'Pay your invoice',
 	cash: 'Pay at the clinic',
@@ -52,7 +52,7 @@ export function PaymentDue({ instructions, dueAt, fallback, reference }: Payment
 	const due = useDueLabel(instructions?.dueAt ?? dueAt);
 	if (!instructions && !fallback) return null;
 
-	const provider = instructions?.provider ?? '';
+	const provider = instructions?.provider;
 	const invoiceUrl = safeInvoiceUrl(instructions?.hostedInvoiceUrl);
 	const bank = instructions?.bankDetails;
 	const bankRows = bank
@@ -69,7 +69,7 @@ export function PaymentDue({ instructions, dueAt, fallback, reference }: Payment
 		<section aria-labelledby="payment-due-title" className="paper border border-honey/50 px-6 py-7 sm:px-8">
 			<p className="eyebrow text-[0.62rem] text-oak">Payment to confirm</p>
 			<h2 id="payment-due-title" className="display-xs mt-3 text-ink">
-				{HEADING[provider] ?? 'How to pay'}
+				{(provider ? HEADING[provider] : undefined) ?? 'How to pay'}
 			</h2>
 
 			{due ? (
