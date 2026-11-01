@@ -10,6 +10,7 @@ import { getProductImage } from '@/lib/format';
 import { getStaffImageUrl, getStaffName } from '@/lib/staff-utils';
 import type { CalendarEvent } from '@/lib/calendar';
 import { clinicMeta, prepFor, siteConfig, type Prep } from '@/lib/site-config';
+import { outcomeOf, type VisitOutcome } from '@/lib/visit-outcome';
 
 /** variant slug → department (collection) slug, from the server. */
 export type DepartmentIndex = Record<string, string>;
@@ -37,6 +38,8 @@ export interface VisitRow {
 	directionsHref: string | null;
 	onlineLink: string | null;
 	status: string;
+	/** Confirmed, or waiting for payment / the clinic's confirmation. */
+	outcome: VisitOutcome;
 	addOns: { id: string; title: string; quantity: number }[];
 	event: CalendarEvent;
 }
@@ -113,6 +116,7 @@ export function useVisitRows(order: OrderDetailResponse | null, departments: Dep
 					directionsHref: address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}` : null,
 					onlineLink: video ? (loc?.link ?? null) : null,
 					status: a.status,
+					outcome: outcomeOf([a]),
 					addOns: (li.addOnLineItems ?? []).map((ao, j) => ({
 						id: ao.id ?? `${a.id}-addon-${j}`,
 						title: ao.addOn?.title ?? 'Add-on',

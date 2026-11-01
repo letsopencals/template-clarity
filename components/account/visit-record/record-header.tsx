@@ -24,7 +24,7 @@ export function RecordHeader({ visit, nowMs, upcoming }: { visit: CareVisit; now
 					{visit.video ? 'Video visit' : 'Clinic visit'}
 					{dept ? ` · ${departmentLabel(dept)}` : ''}
 				</span>
-				<VisitStatusBadge status={visit.status} past={!upcoming} />
+				<VisitStatusBadge status={visit.status} past={!upcoming} pendingReason={visit.pendingReason} />
 				{upcoming ? <span className="tabular text-xs text-ink-muted">{formatCountdown(new Date(visit.from).getTime(), nowMs)}</span> : null}
 			</div>
 			<div className="mt-6 flex min-w-0 gap-5">

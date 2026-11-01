@@ -1,3 +1,4 @@
+import type { AppointmentDetailResponse, StorefrontAppointmentPendingReason } from '@opencals/storefront-sdk';
 import type { Patient } from '@/lib/intake';
 
 /**
@@ -88,7 +89,10 @@ export interface CareCharge {
 	paidTotal: number;
 	refundedTotal: number;
 	balance: number;
-	paymentStatus: 'unpaid' | 'paid' | 'partially-paid';
+	/** The SDK's full union, including `voided` (cancelled before anything was paid). */
+	paymentStatus: NonNullable<AppointmentDetailResponse['order']>['paymentStatus'];
+	/** Pay-by deadline for manual payments (ISO), when the clinic sets one. */
+	paymentDueAt: string | null;
 	refundStatus: 'refund-owed' | 'partially-refunded' | 'fully-refunded' | 'unrefunded';
 	/** Payment methods used ("stripe", "cash"…). */
 	providers: string[];
@@ -97,6 +101,8 @@ export interface CareCharge {
 export interface CareVisit {
 	id: string;
 	status: VisitStatus;
+	/** Why a `pending` visit waits. Null when it doesn't (or is only briefly pending while being confirmed). */
+	pendingReason: StorefrontAppointmentPendingReason | null;
 	/** UTC ISO. */
 	from: string;
 	to: string;

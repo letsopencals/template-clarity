@@ -10,13 +10,15 @@ import type { CareVisit } from '@/components/account/care-types';
 const PAYMENT_LABEL: Record<NonNullable<CareVisit['charge']>['paymentStatus'], string> = {
 	paid: 'Paid',
 	'partially-paid': 'Part paid',
-	unpaid: 'To pay at the clinic',
+	unpaid: 'To pay',
+	voided: 'Cancelled — not charged',
 };
 
 const PROVIDER_LABEL: Record<string, string> = {
 	stripe: 'card',
 	cash: 'in clinic',
 	bank_transfer: 'bank transfer',
+	stripe_invoice: 'invoice',
 	shopify: 'online',
 	no_payment_required: 'no payment needed',
 };

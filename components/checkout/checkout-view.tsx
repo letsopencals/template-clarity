@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import Link from 'next/link';
 import { useCart } from '@/contexts/cart-context';
 import { useCheckout, type CheckoutStep } from '@/contexts/checkout-context';
 import { useSmoothScroll } from '@/components/motion/smooth-scroll';
 import { CareLine } from '@/components/motifs/care-line';
 import { EmptyCard } from '@/components/cart/empty-card';
 import { formatPrice } from '@/lib/format';
+import { buttonClasses } from '@/components/ui/button';
 import { siteConfig } from '@/lib/site-config';
 import { CheckoutMasthead } from './checkout-masthead';
 import { CheckoutSection, type SectionState } from './checkout-section';
@@ -33,7 +35,7 @@ function sectionFor(step: CheckoutStep): string {
 /** /checkout — two numbered sheets on the left, the appointment-card stack on the right. */
 export function CheckoutView() {
 	const { cart, cartId, isLoaded } = useCart();
-	const { checkoutComplete } = useCheckout();
+	const { checkoutComplete, holdLost } = useCheckout();
 
 	if (checkoutComplete) {
 		return (
@@ -44,6 +46,25 @@ export function CheckoutView() {
 						Confirming your <em>visit</em>
 					</p>
 					<p className="mt-2 text-sm text-ink-muted">Taking you to your visit pass.</p>
+				</div>
+			</CheckoutShell>
+		);
+	}
+
+	if (holdLost) {
+		return (
+			<CheckoutShell>
+				<div className="flex min-h-[40vh] flex-col items-center justify-center text-center" role="alert">
+					<CareLine settled trigger="mount" tone="steel" className="h-10 w-48" />
+					<p className="display-sm mt-6 text-ink">
+						That time has <em>gone</em>
+					</p>
+					<p className="mt-2 max-w-[44ch] text-sm text-ink-muted">
+						The appointment we were holding was booked by someone else while you were checking out. Nothing was charged. Please pick another time.
+					</p>
+					<Link href="/care" className={buttonClasses({ variant: 'primary', size: 'md', className: 'mt-7' })}>
+						Find another time
+					</Link>
 				</div>
 			</CheckoutShell>
 		);
@@ -163,7 +184,7 @@ function CheckoutBody() {
 							index="02"
 							title="Payment"
 							state={sectionState(step, 1)}
-							lockedHint="Card, or pay at the clinic where offered."
+							lockedHint="Card, or another way to pay where the clinic offers one."
 						>
 							{step === 'payment' ? (
 								<PaymentStep payLabel={total} onProcessingChange={setStripeProcessing} />

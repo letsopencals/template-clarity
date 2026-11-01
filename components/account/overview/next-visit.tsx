@@ -66,7 +66,11 @@ export function NextVisit({ visit }: { visit: CareVisit }) {
 							{nowMs ? formatCountdown(new Date(visit.from).getTime(), nowMs) : ' '}
 						</span>
 						{forWhom !== 'You' ? <span className="rounded-full bg-honey-soft px-2.5 py-0.5 text-[11px] font-semibold text-oak">For {forWhom}</span> : null}
-						{visit.status === 'pending' ? <span className="rounded-full bg-honey-soft px-2.5 py-0.5 text-[11px] font-semibold text-oak">Awaiting confirmation</span> : null}
+						{visit.status === 'pending' && visit.pendingReason ? (
+							<span className="rounded-full bg-honey-soft px-2.5 py-0.5 text-[11px] font-semibold text-oak">
+								{visit.pendingReason === 'awaiting_payment' ? 'Awaiting payment' : 'Awaiting confirmation'}
+							</span>
+						) : null}
 					</div>
 
 					<div className="mt-6 flex min-w-0 gap-5">

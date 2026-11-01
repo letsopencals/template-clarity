@@ -101,6 +101,7 @@ function chargeOf(detail: AppointmentDetailResponse): CareCharge | null {
 		refundedTotal: order.refundedTotal,
 		balance: order.balance,
 		paymentStatus: order.paymentStatus,
+		paymentDueAt: order.paymentDueAt ?? null,
 		refundStatus: order.refundStatus,
 		providers,
 	};
@@ -114,6 +115,7 @@ export function toCareVisit(detail: AppointmentDetailResponse, departments: Depa
 	return {
 		id: detail.id,
 		status: detail.status,
+		pendingReason: detail.pendingReason ?? null,
 		from: detail.from,
 		to: detail.to,
 		createdAt: detail.createdAt,

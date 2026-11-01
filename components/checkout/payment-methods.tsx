@@ -16,6 +16,8 @@ export function methodActionLabel(name: string | undefined): string {
 			return 'Confirm visit, pay at the clinic';
 		case 'bank_transfer':
 			return 'Confirm visit, pay by transfer';
+		case 'stripe_invoice':
+			return 'Confirm visit, pay by invoice';
 		case 'no_payment_required':
 			return 'Confirm visit';
 		default:
@@ -136,6 +138,8 @@ function customerTitle(name: string): string | undefined {
 			return 'Pay at the clinic';
 		case 'bank_transfer':
 			return 'Bank transfer';
+		case 'stripe_invoice':
+			return 'Pay by invoice';
 		case 'no_payment_required':
 			return 'Nothing to pay today';
 		default:
@@ -150,7 +154,9 @@ function customerCopy(name: string): string | undefined {
 		case 'cash':
 			return 'We hold the time now. Pay at reception on the day, or after your video visit.';
 		case 'bank_transfer':
-			return 'We’ll email the transfer details with your confirmation.';
+			return 'We’ll show the transfer details on your visit pass and email them to you.';
+		case 'stripe_invoice':
+			return 'We’ll email an invoice you can pay online, with the date it’s due.';
 		case 'no_payment_required':
 			return 'This visit is covered, so we’ll confirm it straight away.';
 		default:

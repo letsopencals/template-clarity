@@ -24,6 +24,12 @@ function passTransition(i: number): Transition {
 
 const SETTLE_AFTER_MS = 1400;
 
+const PASS_STATUS: Record<VisitRow['outcome'], string> = {
+	confirmed: 'Confirmed.',
+	awaiting_payment: 'Received, awaiting payment.',
+	awaiting_approval: 'Received, awaiting the clinic’s confirmation.',
+};
+
 /** The care line on each pass: drawn with its pulse, then settles flat ("from worry to calm"). */
 function SettlingLine() {
 	const reduce = useReducedMotion();
@@ -70,7 +76,8 @@ interface VisitPassProps {
 }
 
 /**
- * One perforated visit pass: brass "Confirmed" seal pressed on, the care line
+ * One perforated visit pass: brass "Confirmed" (or "Received", while the visit
+ * waits for payment or the clinic) seal pressed on, the care line
  * settling flat, the essentials (when, where, who with, who for), and a stub
  * with calendar, directions or the video link.
  */
@@ -78,6 +85,7 @@ export const VisitPass = memo(function VisitPass({ row, index, count, orderName,
 	const reduce = useReducedMotion();
 	const patient = usePatientName(row.id, authenticated);
 	const ics = icsHref([row.event]);
+	const sealWord = row.outcome === 'confirmed' ? 'Confirmed' : 'Received';
 
 	return (
 		<motion.article
@@ -113,11 +121,11 @@ export const VisitPass = memo(function VisitPass({ row, index, count, orderName,
 							</p>
 						) : null}
 					</div>
-					<Seal motion="stamp" size={96} ring="Confirmed · Clear Care Medical · " className="-mt-1 -mr-2 shrink-0 max-sm:hidden" />
-					<Seal motion="stamp" size={72} ring="Confirmed · Clear Care · " className="-mt-1 -mr-1 shrink-0 sm:hidden" />
+					<Seal motion="stamp" size={96} ring={`${sealWord} · Clear Care Medical · `} className="-mt-1 -mr-2 shrink-0 max-sm:hidden" />
+					<Seal motion="stamp" size={72} ring={`${sealWord} · Clear Care · `} className="-mt-1 -mr-1 shrink-0 sm:hidden" />
 				</div>
 
-				<p className="sr-only">Confirmed.</p>
+				<p className="sr-only">{PASS_STATUS[row.outcome]}</p>
 				<SettlingLine />
 
 				<dl className="mt-5 grid grid-cols-1 gap-x-8 gap-y-5 sm:grid-cols-2">

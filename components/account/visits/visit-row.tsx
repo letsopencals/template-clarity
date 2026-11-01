@@ -38,7 +38,7 @@ export const VisitRow = memo(function VisitRow({ visit, past, href }: { visit: C
 				{who !== 'You' ? <p className="mt-1 text-xs font-medium text-oak">For {who}</p> : null}
 			</div>
 			<div className="flex shrink-0 flex-col items-end gap-2">
-				<VisitStatusBadge status={visit.status} past={past} />
+				<VisitStatusBadge status={visit.status} past={past} pendingReason={visit.pendingReason} />
 				<svg aria-hidden viewBox="0 0 16 16" className="size-4 text-ink-dim transition-transform duration-300 group-hover:translate-x-0.5 group-hover:text-steel" fill="none" stroke="currentColor" strokeWidth={1.6}>
 					<path d="M6 3l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />
 				</svg>

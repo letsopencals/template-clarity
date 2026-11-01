@@ -18,9 +18,9 @@ interface PaymentStepProps {
 }
 
 /**
- * 02 — Payment, once a method is started: the Stripe element, or a plain
- * confirm for offline methods (cash and "nothing to pay" confirm straight away
- * from the context, so they rarely land here).
+ * 02 — Payment, once a card payment is started: the Stripe element. Manual
+ * methods and "nothing to pay" are placed straight away by the context, so
+ * the plain confirm below is only a fallback.
  */
 export function PaymentStep({ payLabel, onProcessingChange }: PaymentStepProps) {
 	const { selectedProvider, paymentData, submitting, isExpired, setStep, setError, handleSubmitCheckout } = useCheckout();
@@ -29,7 +29,7 @@ export function PaymentStep({ payLabel, onProcessingChange }: PaymentStepProps) 
 
 	return (
 		<div className="space-y-6">
-			{selectedProvider === 'stripe' && paymentData.clientSecret ? (
+			{paymentData.clientSecret ? (
 				<StripePayment
 					clientSecret={paymentData.clientSecret}
 					stripeAccountId={paymentData.stripeAccountId}
@@ -42,14 +42,8 @@ export function PaymentStep({ payLabel, onProcessingChange }: PaymentStepProps) 
 				/>
 			) : (
 				<div className="rounded-field border border-line bg-cream/60 p-6">
-					<p className="font-display text-[1.25rem] text-ink">
-						{selectedProvider === 'bank_transfer' ? 'Pay by bank transfer' : 'Pay at the clinic'}
-					</p>
-					<p className="mt-2 text-sm text-ink-muted">
-						{selectedProvider === 'bank_transfer'
-							? 'We’ll email the transfer details with your confirmation.'
-							: 'We’ll hold your time. Pay at reception on the day.'}
-					</p>
+					<p className="font-display text-[1.25rem] text-ink">{offlineTitle(selectedProvider)}</p>
+					<p className="mt-2 text-sm text-ink-muted">{offlineCopy(selectedProvider)}</p>
 					<Button variant="primary" size="lg" className="mt-6" onClick={() => handleSubmitCheckout()} disabled={submitting || isExpired}>
 						{submitting ? 'Confirming…' : 'Confirm visit'}
 					</Button>
@@ -82,4 +76,30 @@ function StripeSkeleton() {
 			</div>
 		</div>
 	);
+}
+
+function offlineTitle(provider: string | null): string {
+	switch (provider) {
+		case 'cash':
+			return 'Pay at the clinic';
+		case 'bank_transfer':
+			return 'Pay by bank transfer';
+		case 'stripe_invoice':
+			return 'Pay by invoice';
+		default:
+			return 'Confirm your visit';
+	}
+}
+
+function offlineCopy(provider: string | null): string {
+	switch (provider) {
+		case 'cash':
+			return 'We’ll hold your time. Pay at reception on the day.';
+		case 'bank_transfer':
+			return 'We’ll show the transfer details next and email them to you.';
+		case 'stripe_invoice':
+			return 'We’ll email an invoice you can pay online.';
+		default:
+			return 'We’ll hold your time and email you the details.';
+	}
 }
